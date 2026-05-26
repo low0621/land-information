@@ -11,14 +11,15 @@ from app.models import Project, Zoning
 from app.schemas import ParcelQuery, ParcelResponse, ProjectResponse, ZoningUploadResponse
 from app.seed import init_db
 
-ZONING_CSV_COLUMNS = [
-    "county",
-    "district",
-    "urban_plan",
-    "land_use_zone",
-    "building_coverage",
-    "floor_area_ratio",
-]
+ZONING_CSV_HEADER_MAP = {
+    "縣市": "county",
+    "行政區": "district",
+    "都市計畫地區": "urban_plan",
+    "使用分區": "land_use_zone",
+    "建蔽率": "building_coverage",
+    "容積率": "floor_area_ratio",
+}
+ZONING_CSV_COLUMNS = list(ZONING_CSV_HEADER_MAP.keys())
 
 app = FastAPI(title="Land Information Backend")
 
@@ -42,9 +43,13 @@ def on_startup() -> None:
     summary="取得專案資料",
     description=(
         "依 UUID 取得對應的專案資料。\n\n"
-        "- **path 參數**：`uuid` — 專案唯一識別碼\n"
-        "- **成功回應**：`200`，回傳 `{ uuid, data }`，其中 `data` 為該專案的 JSON 內容\n"
-        "- **錯誤回應**：`401` — 找不到對應 UUID 的專案（預留作為未來認證失敗用途）"
+        "**Path 參數**：\n"
+        "- `uuid` (str)：專案唯一識別碼，由前端產生或從先前建立流程取得\n\n"
+        "**成功回應 `200`**：\n"
+        "- `uuid` (str)：與 path 相同\n"
+        "- `data` (object)：該專案內容，JSON 結構由建立專案時決定（未強制 schema）\n\n"
+        "**錯誤回應**：\n"
+        "- `401`：找不到對應 UUID 的專案（預留未來作為認證失敗用途）"
     ),
 )
 def get_project(uuid: str, db: Session = Depends(get_db)) -> ProjectResponse:
@@ -59,11 +64,22 @@ def get_project(uuid: str, db: Session = Depends(get_db)) -> ProjectResponse:
     response_model=ParcelResponse,
     summary="查詢地號相關資訊",
     description=(
-        "依縣市 / 行政區 / 都市計劃區 / 使用分區 / 地段號 / 地號 / 所有權人 / 持分查詢土地資訊。\n\n"
-        "- **建蔽率、容積率**：由 `zoning` 資料表依前四個欄位完全比對撈出\n"
-        "- **房價、面積、公告現值**：由地籍便民系統爬出來，並依 `share`（持分，0 < share ≤ 1）等比例縮放後回傳\n"
-        "- **所有權人 `owner`**：目前僅收進 payload，預留未來權狀／歷史紀錄查詢使用\n\n"
-        "**錯誤回應**：`404` — 找不到符合條件的使用分區資料"
+        "依縣市 / 行政區 / 都市計畫地區 / 使用分區 / 地段號 / 地號 / 所有權人 / 持分查詢土地資訊。\n\n"
+        "**Request body 參數**：\n"
+        "- `county` (str)：縣市，例如「臺北市」\n"
+        "- `district` (str)：行政區，例如「大安區」\n"
+        "- `urban_plan` (str)：都市計畫地區名稱，例如「臺北市都市計畫」\n"
+        "- `land_use_zone` (str)：使用分區，例如「第三種住宅區」、「商業區」\n"
+        "- `section_no` (str)：地段號（段／小段代碼），用於定位地籍\n"
+        "- `land_no` (str)：地號，與地段號合併後可唯一指向一筆地籍\n"
+        "- `owner` (str)：所有權人姓名；目前僅收進 payload，預留未來權狀／歷史紀錄查詢使用\n"
+        "- `share` (float, 0 < share ≤ 1)：持分比例。`1` 表示完全持有，`0.5` 表示一半\n\n"
+        "**處理邏輯**：\n"
+        "- `building_coverage`（建蔽率）、`floor_area_ratio`（容積率）：由 `zoning` 表以 (county, district, urban_plan, land_use_zone) 四欄完全比對撈出\n"
+        "- `house_price`（房價）、`area`（面積）、`announced_value`（公告現值）：目前為假資料，回傳前會乘上 `share`\n\n"
+        "**錯誤回應**：\n"
+        "- `404`：找不到符合條件的使用分區資料\n"
+        "- `422`：payload 欄位缺漏或型別錯誤（FastAPI 預設驗證）"
     ),
 )
 def query_parcel(payload: ParcelQuery, db: Session = Depends(get_db)) -> ParcelResponse:
@@ -101,13 +117,26 @@ def query_parcel(payload: ParcelQuery, db: Session = Depends(get_db)) -> ParcelR
     summary="上傳 zoning CSV 並更新資料庫",
     description=(
         "上傳一份 CSV 檔，將 `zoning` 資料寫入資料庫。\n\n"
-        "**CSV 欄位（header 必填，順序不限）**：\n"
-        "`county, district, urban_plan, land_use_zone, building_coverage, floor_area_ratio`\n\n"
+        "**Form 參數**：\n"
+        "- `file` (UploadFile)：UTF-8 編碼的 `.csv` 檔，欄位定義如下\n\n"
+        "**CSV 欄位（header 為中文，順序不限）**：\n"
+        "- `縣市` (str) → 對應 DB `county`\n"
+        "- `行政區` (str) → 對應 DB `district`\n"
+        "- `都市計畫地區` (str) → 對應 DB `urban_plan`\n"
+        "- `使用分區` (str) → 對應 DB `land_use_zone`\n"
+        "- `建蔽率` (str/float) → 對應 DB `building_coverage`；可帶 `%`（如 `30%`），存入前會除以 100 轉為小數（`0.3`）\n"
+        "- `容積率` (str/float) → 對應 DB `floor_area_ratio`；可帶 `%`（如 `225%`），存入前會除以 100 轉為小數（`2.25`）\n\n"
         "**行為**：\n"
-        "- 以 (county, district, urban_plan, land_use_zone) 為唯一鍵\n"
+        "- 以 (縣市, 行政區, 都市計畫地區, 使用分區) 為唯一鍵\n"
         "- 已存在則更新建蔽率／容積率，不存在則新增\n"
         "- 單行格式錯誤會被記錄到 `errors` 並跳過，不影響其他行\n\n"
-        "**回應**：`{ inserted, updated, skipped, errors }`"
+        "**回應欄位**：\n"
+        "- `inserted` (int)：新增筆數\n"
+        "- `updated` (int)：更新筆數\n"
+        "- `skipped` (int)：略過筆數（格式錯誤）\n"
+        "- `errors` (list[str])：每個略過行的錯誤訊息，含行號\n\n"
+        "**錯誤回應**：\n"
+        "- `400`：副檔名非 `.csv`、檔案編碼非 UTF-8，或 CSV header 欄位不完整"
     ),
 )
 async def upload_zoning_csv(
@@ -124,6 +153,7 @@ async def upload_zoning_csv(
         raise HTTPException(status_code=400, detail="CSV 編碼需為 UTF-8")
 
     reader = csv.DictReader(io.StringIO(text))
+    print(reader.fieldnames)
     if reader.fieldnames is None or not set(ZONING_CSV_COLUMNS).issubset(reader.fieldnames):
         raise HTTPException(
             status_code=400,
@@ -137,14 +167,14 @@ async def upload_zoning_csv(
 
     for line_no, row in enumerate(reader, start=2):  # start=2: 第 1 行是 header
         try:
-            county = (row["county"] or "").strip()
-            district = (row["district"] or "").strip()
-            urban_plan = (row["urban_plan"] or "").strip()
-            land_use_zone = (row["land_use_zone"] or "").strip()
+            county = (row["縣市"] or "").strip()
+            district = (row["行政區"] or "").strip()
+            urban_plan = (row["都市計畫地區"] or "").strip()
+            land_use_zone = (row["使用分區"] or "").strip()
             if not all([county, district, urban_plan, land_use_zone]):
                 raise ValueError("key 欄位不可為空")
-            building_coverage = float(row["building_coverage"])
-            floor_area_ratio = float(row["floor_area_ratio"])
+            building_coverage = float((row["建蔽率"] or "").strip().rstrip("%")) * 0.01
+            floor_area_ratio = float((row["容積率"] or "").strip().rstrip("%")) * 0.01
         except (KeyError, ValueError, TypeError) as e:
             skipped += 1
             errors.append(f"line {line_no}: {e}")
