@@ -28,7 +28,8 @@ def init_db() -> None:
 
         if db.query(Project).count() == 0:
             db.add(Project(
-                uuid="demo-uuid-0001",
+                pid="demo-pid-0001",
+                user_id="demo-user-0001",
                 data={
                     "name": "示範專案",
                     "owner": "demo",
