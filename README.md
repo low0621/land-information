@@ -7,6 +7,21 @@ FastAPI + SQLite 後端 + 純 HTML/React (CDN) 前端，包含土地分區、公
 - Python ≥ 3.13
 - [uv](https://docs.astral.sh/uv/) (建議) 或 pip
 
+## 外部服務 (Mortgage / miaogu) 設定
+
+本後端的「房價估值」會呼叫外部 mortgage 服務 (miaogu)，需先啟動該服務：
+
+1. Clone repo（使用 `sinopac-dev` branch）：
+
+   ```bash
+   git clone -b sinopac-dev https://github.com/sino-sandbox/sinopac-mortgage.git
+   cd sinopac-mortgage
+   ```
+
+2. 依該 repo 的 README 把 server 起起來，記下它監聽的 port。
+
+3. 回到本 repo，將該 server 的 base URL（含 port，例如 `http://localhost:8004`）填到下節的 `.env` 中。
+
 ## 環境變數設定
 
 複製 `.env.sample` 為 `.env`，再依環境修改：
@@ -14,6 +29,10 @@ FastAPI + SQLite 後端 + 純 HTML/React (CDN) 前端，包含土地分區、公
 ```bash
 cp .env.sample .env
 ```
+
+| 變數           | 預設值                  | 說明                                          |
+| -------------- | ----------------------- | --------------------------------------------- |
+| `MORTGAGE_URL` | `http://localhost:8004` | 上面 mortgage 服務的 base URL（到 port 為止） |
 
 ## 啟動方式
 
