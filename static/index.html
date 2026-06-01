@@ -47,8 +47,10 @@ const uid = () => ++_uid;
    API 抽象層 (對接後端 OpenAPI)
    設計成「介面」: 未來後端通了, useMockData = false 即可
 ════════════════════════════════════════ */
+const API_BASE_URL_STORAGE_KEY = "land-info.api-base-url";
 const API_CONFIG = {
-  baseURL: "https://fe1b-211-76-155-19.ngrok-free.app",  // 後端 URL (ngrok)
+  // 預設 baseURL; 啟動時會被 localStorage 覆寫 (若有設定)
+  baseURL: localStorage.getItem(API_BASE_URL_STORAGE_KEY) || "https://fe1b-211-76-155-19.ngrok-free.app",
   useMockData: false,       // true = 用假資料 (本機開發); false = 呼叫真實 API
   timeout: 10000,           // 請求逾時 (ms)
   // ngrok 免費版需要此 header 跳過瀏覽器警告頁
@@ -1282,9 +1284,15 @@ function openSystemSettings() {
         <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#475569;">
           目前狀態 ${apiStatus}
         </div>
-        <div style="font-size:11px;color:#64748b;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:6px 10px;font-family:'JetBrains Mono',ui-monospace,monospace;word-break:break-all;">
-          ${API_CONFIG.useMockData ? "所有 API 呼叫回傳模擬數據" : API_CONFIG.baseURL}
-        </div>
+        <label style="font-size:11px;color:#64748b;display:flex;flex-direction:column;gap:4px;">
+          後端 baseURL (儲存後立即生效, 存放於瀏覽器 localStorage)
+          <div style="display:flex;gap:6px;">
+            <input id="ss-base-url" type="text" value="${API_CONFIG.baseURL.replace(/"/g,"&quot;")}" placeholder="https://your-backend.example.com"
+              style="flex:1;padding:6px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;font-family:'JetBrains Mono',ui-monospace,monospace;"/>
+            <button id="ss-base-url-save" style="padding:6px 14px;background:#0284c7;color:#fff;border:0;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">儲存</button>
+            <button id="ss-base-url-reset" title="清除設定, 還原為預設值" style="padding:6px 10px;border:1px solid #cbd5e1;background:#fff;color:#475569;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">還原</button>
+          </div>
+        </label>
       </section>
 
       <div style="display:flex;justify-content:flex-end;">
@@ -1296,6 +1304,21 @@ function openSystemSettings() {
   overlay.querySelector("#ss-close").onclick = cleanup;
   overlay.querySelector("#ss-close-x").onclick = cleanup;
   overlay.onclick = (e) => { if (e.target === overlay) cleanup(); };
+
+  // 儲存 / 還原 baseURL
+  overlay.querySelector("#ss-base-url-save").onclick = () => {
+    const v = overlay.querySelector("#ss-base-url").value.trim().replace(/\/+$/, "");
+    if (!v) { alert("baseURL 不可為空"); return; }
+    if (!/^https?:\/\//i.test(v)) { alert("baseURL 必須以 http:// 或 https:// 開頭"); return; }
+    localStorage.setItem(API_BASE_URL_STORAGE_KEY, v);
+    API_CONFIG.baseURL = v;
+    alert("✓ 已儲存 baseURL:\n" + v);
+  };
+  overlay.querySelector("#ss-base-url-reset").onclick = () => {
+    if (!window.confirm("還原為程式碼預設的 baseURL? (將清除 localStorage 的設定, 重新整理頁面後生效)")) return;
+    localStorage.removeItem(API_BASE_URL_STORAGE_KEY);
+    alert("已清除, 請重新整理頁面");
+  };
 
   // 手動輸入分區基準
   overlay.querySelector("#ss-zoning-manual").onclick = async () => {
