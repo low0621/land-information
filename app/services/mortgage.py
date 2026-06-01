@@ -1,8 +1,10 @@
+import os
 from datetime import datetime
 
 import requests
 
-MIAOGU_URL = "http://localhost:8004/v4/mortgages/miaogu"
+MORTGAGE_URL = os.environ.get("MORTGAGE_URL", "http://localhost:8004").rstrip("/")
+MIAOGU_URL = f"{MORTGAGE_URL}/v4/mortgages/miaogu"
 
 
 def fetch_house_price(

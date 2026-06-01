@@ -7,6 +7,14 @@ FastAPI + SQLite 後端 + 純 HTML/React (CDN) 前端，包含土地分區、公
 - Python ≥ 3.13
 - [uv](https://docs.astral.sh/uv/) (建議) 或 pip
 
+## 環境變數設定
+
+複製 `.env.sample` 為 `.env`，再依環境修改：
+
+```bash
+cp .env.sample .env
+```
+
 ## 啟動方式
 
 ### 使用 uv (推薦)
@@ -15,8 +23,8 @@ FastAPI + SQLite 後端 + 純 HTML/React (CDN) 前端，包含土地分區、公
 # 安裝相依套件 (第一次或更新 pyproject.toml 後)
 uv sync
 
-# 啟動服務
-uv run uvicorn app.main:app --host 0.0.0.0 --port 8003 --reload
+# 啟動服務 (--env-file 載入 .env)
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8003 --reload --env-file .env
 ```
 
 ### 使用 pip / venv
@@ -25,7 +33,7 @@ uv run uvicorn app.main:app --host 0.0.0.0 --port 8003 --reload
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e .
-uvicorn app.main:app --host 0.0.0.0 --port 8003 --reload
+uvicorn app.main:app --host 0.0.0.0 --port 8003 --reload --env-file .env
 ```
 
 啟動成功後：
