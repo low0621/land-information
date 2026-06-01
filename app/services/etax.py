@@ -25,6 +25,6 @@ def fetch_etax_calculate(
         "numerator": numerator,
         "denominator": denominator,
     }
-    resp = requests.post(ETAX_URL, json=payload, timeout=15)
+    resp = requests.post(ETAX_URL, json=payload, timeout=15, verify=False)
     resp.raise_for_status()
     return resp.json()

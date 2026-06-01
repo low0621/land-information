@@ -269,7 +269,7 @@ def query_house_price(payload: HousePriceQuery) -> HousePriceResponse:
         city_code, town_code, office, section_no = resolve_codes(
             county=payload.county,
             district=payload.district,
-            section_no=section_no,
+            section_no=payload.section_no,
         )
         detail = fetch_land_detail(
             city_code=city_code,
@@ -279,8 +279,10 @@ def query_house_price(payload: HousePriceQuery) -> HousePriceResponse:
             land_no=payload.land_no,
         )
     except ValueError as e:
+        print(e)
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        print("easymap error: ", e)
         raise HTTPException(
             status_code=502, detail=f"easymap fetch failed: {e}")
 
@@ -294,6 +296,7 @@ def query_house_price(payload: HousePriceQuery) -> HousePriceResponse:
             total_floors=payload.total_floors,
         )
     except Exception as e:
+        print("mortgage error: ", e)
         raise HTTPException(
             status_code=502, detail=f"house price service failed: {e}")
 
@@ -315,7 +318,7 @@ def query_house_price(payload: HousePriceQuery) -> HousePriceResponse:
         "- `land_type` (str)：土地類別代碼\n"
         "- `share` (str)：持分（float 字串），例如 `0.5`、`0.25`\n\n"
         "**處理邏輯**：\n"
-        "- 將 `share` 轉成 `Fraction` 後（限制分母最大 1000）取 `numerator` / `denominator` 送 etax\n"
+        "- 將 `share` 轉成 `Fraction` 後（限制分母最大 10）取 `numerator` / `denominator` 送 etax\n"
         "- 回傳 etax response 中的 `result.param5`\n\n"
         "**錯誤回應**：\n"
         "- `400`：`share` 無法解析成數字、≤ 0，或 `year`/`month` 在 `price_index` 表查不到\n"
@@ -329,6 +332,7 @@ def query_land_tax(
     try:
         share_value = float(payload.share)
     except ValueError:
+        print(payload.share)
         raise HTTPException(
             status_code=400, detail=f"invalid share: {payload.share!r}")
     if share_value <= 0:
@@ -343,6 +347,7 @@ def query_land_tax(
         .first()
     )
     if price_index is None:
+        print(payload.year, payload.month)
         raise HTTPException(
             status_code=400,
             detail=f"查詢年月超出範圍：{payload.year}/{payload.month} 無物價指數資料",
@@ -361,16 +366,20 @@ def query_land_tax(
             price_idx=str(price_index.price_idx),
         )
     except Exception as e:
+        print("etax error: ", e)
         raise HTTPException(status_code=502, detail=f"etax fetch failed: {e}")
 
     try:
+        print(result)
         raw = result["result"]["param5"]
     except (KeyError, TypeError) as e:
+        print("etax response error: ", e)
         raise HTTPException(
             status_code=502, detail=f"unexpected etax response: {e}")
 
     digits = "".join(ch for ch in str(raw) if ch.isdigit())
     if not digits:
+        print("no digits in param5: ", raw)
         raise HTTPException(
             status_code=502, detail=f"no digits in param5: {raw!r}")
 
@@ -416,7 +425,10 @@ async def upload_zoning_csv(
     try:
         text = raw.decode("utf-8-sig")
     except UnicodeDecodeError:
-        raise HTTPException(status_code=400, detail="CSV 編碼需為 UTF-8")
+        try:
+            text = raw.decode("big5")
+        except UnicodeDecodeError:
+            raise HTTPException(status_code=400, detail="CSV 編碼需為 UTF-8 或 Big5")
 
     reader = csv.DictReader(io.StringIO(text))
     print(reader.fieldnames)
@@ -505,6 +517,7 @@ async def upload_price_index(
     db: Session = Depends(get_db),
 ) -> PriceIndexUploadResponse:
     if not file.filename or not file.filename.lower().endswith(".xls"):
+        print(file.filename)
         raise HTTPException(status_code=400, detail="請上傳 .xls 檔")
 
     raw = await file.read()
