@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>台灣建設開發智腦 v12</title>
+<link rel="icon" type="image/png" href="./assets/favicon.png">
+<link rel="apple-touch-icon" href="./assets/favicon.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
@@ -64,6 +66,26 @@ tailwind.config = {
 *{box-sizing:border-box}
 body{margin:0;font-family:"Noto Sans TC",system-ui,sans-serif;background:#E9E7E0;color:#2C2A26}
 select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236B6A63' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}
+/* 隱藏 number input 的上下調整箭頭 (spinner): 避免佔右側空間、讓靠右數字偏移 */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield;appearance:textfield}
+/* 自訂 checkbox: sage 圓角風格 (取代瀏覽器預設) */
+input[type=checkbox]{-webkit-appearance:none;appearance:none;width:16px;height:16px;flex-shrink:0;border:1.5px solid #CCC8BD;border-radius:5px;background:#fff;cursor:pointer;vertical-align:middle;transition:background-color .15s,border-color .15s,box-shadow .15s}
+input[type=checkbox]:hover{border-color:#8FA47F}
+input[type=checkbox]:checked{background-color:#5E7350;border-color:#5E7350;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='none' stroke='%23fff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 8l3.5 3.5L13 5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center}
+input[type=checkbox]:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(125,138,102,0.25)}
+input[type=checkbox]:disabled{opacity:.5;cursor:not-allowed}
+/* 自訂 range 滑桿: 中性圓角軌道 + sage 圓形 thumb (取代瀏覽器預設) */
+input[type=range]{-webkit-appearance:none;appearance:none;height:18px;background:transparent;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:9999px;background:#E2DFD7}
+input[type=range]::-moz-range-track{height:6px;border-radius:9999px;background:#E2DFD7}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;margin-top:-5px;border-radius:9999px;background:#5E7350;border:2px solid #fff;box-shadow:0 1px 4px rgba(95,107,74,0.4)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:9999px;background:#5E7350;border:2px solid #fff;box-shadow:0 1px 4px rgba(95,107,74,0.4)}
+input[type=range]:focus-visible{outline:none}
+input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(125,138,102,0.25)}
+input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 4px rgba(125,138,102,0.25)}
+input[type=range]:disabled{opacity:.5;cursor:not-allowed}
 .tn{font-variant-numeric:tabular-nums}
 .field-sizing-content{field-sizing:content}
 .el{color:#4D5E42;text-decoration:underline;font-size:10px;cursor:pointer}
@@ -1292,7 +1314,7 @@ function pickImportMode({title, summary, errors = []}) {
     overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:99999;font-family:sans-serif;";
     const errHtml = errors.length === 0 ? "" : `
       <div style="max-height:140px;overflow-y:auto;padding:8px 12px;background:#F8EDE9;border:1px solid #E4BCAF;border-radius:8px;font-size:11px;color:#723829;line-height:1.6;">
-        <div style="font-weight:700;margin-bottom:4px;">⚠ ${errors.length} 個警告</div>
+        <div style="font-weight:700;margin-bottom:4px;display:flex;align-items:center;">${licon('alert-triangle',13)} ${errors.length} 個警告</div>
         ${errors.map(e => `<div>• ${e.replace(/</g,"&lt;")}</div>`).join("")}
       </div>`;
     overlay.innerHTML = `
@@ -1336,7 +1358,7 @@ function openSystemSettings() {
   overlay.innerHTML = `
     <div style="background:#fff;padding:24px;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.2);width:520px;max-width:100%;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;gap:18px;">
       <div style="display:flex;align-items:center;justify-content:space-between;">
-        <div style="font-size:16px;font-weight:700;color:#262420;">⚙️ 系統資料維護</div>
+        <div style="font-size:16px;font-weight:700;color:#262420;display:flex;align-items:center;">${licon('settings',16)} 系統資料維護</div>
         <button id="ss-close-x" style="background:none;border:0;font-size:18px;color:#807D73;cursor:pointer;line-height:1;">×</button>
       </div>
       <div style="font-size:11px;color:#807D73;background:#F5F3EE;border:1px solid #E2DFD7;border-radius:8px;padding:8px 12px;">
@@ -1344,28 +1366,28 @@ function openSystemSettings() {
       </div>
 
       <section style="display:flex;flex-direction:column;gap:8px;">
-        <div style="font-size:13px;font-weight:700;color:#262420;">🗺 分區基準（建蔽率 / 容積率對照表）</div>
+        <div style="font-size:13px;font-weight:700;color:#262420;display:flex;align-items:center;">${licon('map',15)} 分區基準（建蔽率 / 容積率對照表）</div>
         <div style="font-size:11px;color:#807D73;line-height:1.5;">土地查詢前需先建立對應分區基準。CSV 欄位：縣市, 行政區, 都市計畫地區, 使用分區, 建蔽率, 容積率。</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <button id="ss-zoning-manual" style="padding:8px 12px;background:#5E7350;color:#fff;border:0;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">✏️ 手動輸入單筆</button>
+          <button id="ss-zoning-manual" style="padding:8px 12px;background:#5E7350;color:#fff;border:0;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;">${licon('pencil',13)} 新增單筆</button>
           <label style="padding:8px 12px;background:#fff;color:#4D5E42;border:2px solid #B0C0A4;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;text-align:center;font-family:inherit;">
-            📤 上傳 CSV
+            ${licon('upload',13)} 新增多筆(CSV)
             <input id="ss-zoning-csv" type="file" accept=".csv" style="display:none;"/>
           </label>
         </div>
       </section>
 
       <section style="display:flex;flex-direction:column;gap:8px;">
-        <div style="font-size:13px;font-weight:700;color:#262420;">📊 物價指數（土地增值稅試算）</div>
+        <div style="font-size:13px;font-weight:700;color:#262420;display:flex;align-items:center;">${licon('bar-chart-3',15)} 物價指數（土地增值稅試算）</div>
         <div style="font-size:11px;color:#807D73;line-height:1.5;">各民國年度的物價指數。土增稅查詢前需先上傳。檔案格式：.xls / .xlsx。</div>
         <label style="padding:8px 12px;background:#fff;color:#4D5E42;border:2px solid #B0C0A4;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;text-align:center;font-family:inherit;">
-          📤 上傳物價指數 xls
+          ${licon('upload',13)} 上傳物價指數 xls
           <input id="ss-pi-xls" type="file" accept=".xls,.xlsx" style="display:none;"/>
         </label>
       </section>
 
       <section style="display:flex;flex-direction:column;gap:8px;">
-        <div style="font-size:13px;font-weight:700;color:#262420;">🔌 後端 API 模式</div>
+        <div style="font-size:13px;font-weight:700;color:#262420;display:flex;align-items:center;">${licon('plug',15)} 後端 API 模式</div>
         <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#54524A;">
           目前狀態 ${apiStatus}
         </div>
@@ -3293,6 +3315,22 @@ function Icon({name, size=14, strokeWidth=2, className=""}) {
   return <span ref={ref} className={"inline-flex items-center justify-center align-middle shrink-0 " + className} style={{width:size, height:size}}/>;
 }
 
+// 純字串版 Lucide icon — 給用 innerHTML 字串建立的 dialog/modal 用 (React 內請用 <Icon>)
+function licon(name, size=16, color="currentColor") {
+  if (!window.lucide || !window.lucide.icons) return "";
+  const key = name.split("-").map(s => s.charAt(0).toUpperCase() + s.slice(1)).join("");
+  const data = window.lucide.icons[key];
+  if (!data) return "";
+  const svg = window.lucide.createElement(data);
+  svg.setAttribute("width", size);
+  svg.setAttribute("height", size);
+  svg.setAttribute("stroke", color);
+  svg.style.display = "inline-block";
+  svg.style.verticalAlign = "-0.15em";
+  svg.style.marginRight = "4px";
+  return svg.outerHTML;
+}
+
 const KPI = ({label, value, unit, color="text-slate-800", bg="bg-white"}) => (
   <div className={bg + " rounded-2xl p-4 border shadow-sm"}>
     <div className="text-[11px] text-slate-500 mb-0.5">{label}</div>
@@ -3351,6 +3389,57 @@ const NI = ({value, onChange, className="", ...r}) => {
   );
 };
 
+// 年/月下拉 (模組頂層: 避免定義在 render 內每次重建導致 input 掉 focus)
+const YearSel = ({v, onChange, className=""}) => (
+  <select value={v||2028} onChange={e=>onChange(parseInt(e.target.value,10))}
+    className={"text-xs border rounded px-1 py-0.5 bg-slate-50 "+className}>
+    {Array.from({length:61}, (_,i)=>2020+i).map(y => <option key={y} value={y}>{y}</option>)}
+  </select>
+);
+const MonSel = ({v, onChange, className=""}) => (
+  <select value={v||1} onChange={e=>onChange(parseInt(e.target.value,10))}
+    className={"text-xs border rounded px-1 py-0.5 bg-slate-50 "+className}>
+    {Array.from({length:12}, (_,i)=>i+1).map(m => <option key={m} value={m}>{m}月</option>)}
+  </select>
+);
+
+// 建築面積結果列 (支援手動覆寫): 模組頂層, ctx 帶入 {isOver, mo, setOver, clrOver}
+const AreaRow = ({k, label, formula, result, unit="坪", note, accent="navy", ctx}) => {
+  const {isOver, mo, setOver, clrOver} = ctx;
+  const overridden = k && isOver(k);
+  const accentCls =
+    accent==="gold" ? "bg-amber-50 border-amber-300" :
+    accent==="result" ? "bg-emerald-600 border-emerald-600 text-white" :
+    "bg-slate-50 border-slate-200";
+  const labelCls = accent==="result"?"text-amber-200":"text-slate-700";
+  const formulaCls = accent==="result"?"text-slate-300":"text-slate-400";
+  const numCls = accent==="gold"?"text-amber-800":accent==="result"?"text-amber-200":"text-slate-700";
+  return (
+    <div className={"flex items-center justify-between py-2 px-3 rounded-lg border " + accentCls + (overridden ? " ring-2 ring-rose-300" : "")}>
+      <div className="flex-1 min-w-0">
+        <div className={"text-xs font-bold " + labelCls}>{label}{overridden && <span className="ml-2 text-[9px] bg-rose-200 text-rose-800 px-1 py-0.5 rounded">手動覆寫</span>}</div>
+        {formula && <div className={"text-[10px] mt-0.5 " + formulaCls}>{formula}</div>}
+        {note && <div className="text-[10px] text-slate-400 italic mt-0.5">{note}</div>}
+      </div>
+      <div className="flex items-center gap-1 ml-2 shrink-0">
+        {overridden ? (
+          <>
+            <NI value={mo[k]} onChange={v=>setOver(k,v)} step={0.01} className={"w-24 text-right "+(accent==="result"?"text-slate-900":"")}/>
+            <span className={"text-[10px] " + (accent==="result"?"text-slate-300":"text-slate-400")}>{unit}</span>
+            <button onClick={()=>clrOver(k)} title="回復公式自動值" className="text-rose-400 hover:text-rose-600 text-sm leading-none px-1">↻</button>
+          </>
+        ) : (
+          <>
+            <span className={"font-mono font-black text-base "+numCls}>{fmt(result, 2)}</span>
+            <span className={"text-[10px] opacity-70 "+numCls}>{unit}</span>
+            {k && <button onClick={()=>setOver(k, +result.toFixed(2))} title="手動覆寫此值" className={"leading-none px-1 " + (accent==="result"?"text-slate-300 hover:text-white":"text-slate-300 hover:text-slate-600")}><Icon name="pencil" size={12}/></button>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // PctInput: 百分比輸入框 (stateful, 支援小數點 2 位精度)
 // value: 0~1 (decimal); 顯示為 0~100 (%)
 const PctInput = ({value, onChange, className="", step="0.01", min=0, max=100, ...r}) => {
@@ -3398,8 +3487,8 @@ const PctInput = ({value, onChange, className="", step="0.01", min=0, max=100, .
       className={"field-sizing-content w-full " + className} {...r}/>
   );
 };
-const Chk = ({ck, onChange, l, sub, disabled=false}) => (
-  <label className={"flex items-start gap-2 " + (disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer")}>
+const Chk = ({ck, onChange, l, sub, disabled=false, inline=true}) => (
+  <label className={"flex " + (inline ? "items-center gap-2" : "items-start gap-2") + " " + (disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer")}>
     <input type="checkbox" checked={ck} disabled={disabled} onChange={e => onChange(e.target.checked)} className="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600"/>
     <div><span className="text-sm font-semibold text-slate-700">{l}</span>{sub && <div className="text-[10px] text-slate-400">{sub}</div>}</div>
   </label>
@@ -3827,12 +3916,12 @@ function T1({p, sP}) {
             </div>
             <div className="text-[9px] text-emerald-500 mt-1">依基地面積比例加權</div>
           </div>
-          <div className="rounded-xl p-3 text-center border border-amber-200 bg-amber-50">
-            <div className="text-[10px] text-amber-600 font-bold">加權建蔽率</div>
-            <div className="text-2xl font-black text-amber-800 font-mono">
+          <div className="rounded-xl p-3 text-center border border-tan-200 bg-tan-50">
+            <div className="text-[10px] text-tan-600 font-bold">加權建蔽率</div>
+            <div className="text-2xl font-black text-tan-800 font-mono">
               {dr.avg_bcr != null ? (dr.avg_bcr*100).toFixed(1) : "0.0"}%
             </div>
-            <div className="text-[9px] text-amber-500 mt-1">依基地面積比例加權</div>
+            <div className="text-[9px] text-tan-500 mt-1">依基地面積比例加權</div>
           </div>
         </div>
 
@@ -3845,22 +3934,22 @@ function T1({p, sP}) {
         {/* 表格化呈現 */}
         <div className="overflow-x-auto rounded-xl border border-slate-200">
           <table className="w-full text-[11px]">
-            <thead className="bg-emerald-600 text-white">
+            <thead className="bg-slate-600 text-white">
               <tr>
                 <th className="px-1 py-1.5 text-left">縣市</th>
                 <th className="px-1 py-1.5 text-left">行政區</th>
                 <th className="px-1 py-1.5 text-left">使用分區</th>
                 <th className="px-1 py-1.5 text-left">地段</th>
                 <th className="px-1 py-1.5 text-left">地號</th>
-                <th className="px-1 py-1.5 text-left">面積 (m²)</th>
-                <th className="px-1 py-1.5 text-left">面積 (坪)</th>
-                <th className="px-1 py-1.5 text-left">公設</th>
-                <th className="px-1 py-1.5 text-left">容積率</th>
-                <th className="px-1 py-1.5 text-left">建蔽率</th>
-                <th className="px-1 py-1.5 text-left">公告現值<br/><span className="text-[9px] font-normal">元/m²</span></th>
-                <th className="px-1 py-1.5 text-left">公告總值<br/><span className="text-[9px] font-normal">萬</span></th>
-                <th className="px-1 py-1.5 text-left">市值估算<br/><span className="text-[9px] font-normal">萬/坪</span></th>
-                <th className="px-1 py-1.5 text-left">操作</th>
+                <th className="px-1 py-1.5 text-right">面積 (m²)</th>
+                <th className="px-1 py-1.5 text-right">面積 (坪)</th>
+                <th className="px-1 py-1.5 text-center">公設</th>
+                <th className="px-1 py-1.5 text-right">容積率</th>
+                <th className="px-1 py-1.5 text-right">建蔽率</th>
+                <th className="px-1 py-1.5 text-right">公告現值<br/><span className="text-[9px] font-normal text-white/70">元/m²</span></th>
+                <th className="px-1 py-1.5 text-right">公告總值<br/><span className="text-[9px] font-normal text-white/70">萬</span></th>
+                <th className="px-1 py-1.5 text-right">市值估算<br/><span className="text-[9px] font-normal text-white/70">萬/坪</span></th>
+                <th className="px-1 py-1.5 text-center">操作</th>
               </tr>
             </thead>
             <tbody>
@@ -4106,7 +4195,7 @@ function T1({p, sP}) {
           {/* 表格化呈現 */}
           <div className="overflow-x-auto rounded-xl border border-slate-200">
             <table className="w-full text-[11px]">
-              <thead className="bg-emerald-600 text-white">
+              <thead className="bg-slate-600 text-white">
                 <tr>
                   <th className="px-1 py-1.5 text-left">所有權人</th>
                   <th className="px-1 py-1.5 text-center">地段</th>
@@ -4602,7 +4691,7 @@ function T1({p, sP}) {
                 {/* 分配概況表 */}
                 <div className="mt-3 overflow-x-auto rounded-xl border border-emerald-200">
                   <table className="w-full text-[11px]">
-                    <thead className="bg-emerald-600 text-white">
+                    <thead className="bg-slate-600 text-white">
                       <tr>
                         <th className="px-2 py-1.5 text-left">所有權人</th>
                         <th className="px-2 py-1.5 text-right">持分坪</th>
@@ -4667,8 +4756,8 @@ function T1({p, sP}) {
         </div>
 
         {/* 工期 (留在此處方便財務假設一覽) */}
-        <F l="工期" f="dur" u="月"/>
-        <F l="膨脹係數" f="exp" step={0.05}/>
+        {F({l:"工期", f:"dur", u:"月"})}
+        {F({l:"膨脹係數", f:"exp", step:0.05})}
 
         {/* 面積來源切換 */}
         <div className="mt-2 border-t pt-2">
@@ -4677,10 +4766,12 @@ function T1({p, sP}) {
             <Chk ck={!!(p.areaCalc && p.areaCalc.enable)}
               onChange={v => sP({...p, areaCalc:{...(p.areaCalc||{}), enable:v}})}
               l="使用建築規劃精算"
+              inline={false}
               sub={p.areaCalc && p.areaCalc.enable ? "← 已啟用：以 T_b 精算結果為準" : "未啟用，落回下方粗估"}/>
             <Chk ck={p.areaAuto && !(p.areaCalc && p.areaCalc.enable)}
               onChange={v => sP({...p, areaAuto:v})}
               l="自動計算總銷面積 (粗估)"
+              inline={false}
               sub={fmt(totalLandArea,1)+"坪 × "+((effectiveFAR*100).toFixed(0))+"% × "+p.exp+" = "+fmt(autoArea,1)+"坪"}/>
             {!p.areaAuto && !(p.areaCalc && p.areaCalc.enable) &&
               <div className="flex items-center justify-between py-1 ml-6">
@@ -4702,9 +4793,9 @@ function T1({p, sP}) {
         {/* 戶數/車位 (顯示精算結果，可手動覆蓋) */}
         <div className="mt-3 border-t pt-3">
           <div className="text-xs font-bold text-slate-500 mb-2 inline-flex items-center gap-1.5"><Icon name="home" size={12}/> 戶數與車位</div>
-          <F l="總戶數" f="units" u="戶"/>
-          <F l="停車位數" f="parking" u="位"/>
-          <F l="地上層數" f="floors" u="層"/>
+          {F({l:"總戶數", f:"units", u:"戶"})}
+          {F({l:"停車位數", f:"parking", u:"位"})}
+          {F({l:"地上層數", f:"floors", u:"層"})}
           {p.areaCalc && p.areaCalc.enable && dr.areaResult && (
             <div className="mt-2 p-2 bg-emerald-50 rounded-lg border border-emerald-200 text-[11px] space-y-0.5">
               <div className="text-emerald-600 font-bold mb-1 inline-flex items-center gap-1.5"><Icon name="lightbulb" size={12}/> 建築規劃精算建議值</div>
@@ -4718,7 +4809,7 @@ function T1({p, sP}) {
 
 
       {/* ── 三、銷售假設 ── */}
-      <Card title="三、銷售假設" accent="bg-emerald-800" icon="wallet">
+      <Card title="三、銷售假設" accent="bg-sky-800" icon="wallet">
         <div className="bg-slate-50 -mx-4 -mt-3 px-4 py-3 border-b mb-3">
           <Chk ck={p.pip} onChange={v=>up("pip",v)} l="房屋售價已含車位 (勾選後車位收入歸 0, 但仍可記錄車位資料)"/>
         </div>
@@ -4730,12 +4821,13 @@ function T1({p, sP}) {
           </div>
           <div className="bg-emerald-50 rounded-lg p-2 border border-emerald-200">
             <div className="grid gap-1 text-[10px] font-bold text-slate-600 border-b border-emerald-200 pb-1 mb-1"
-                 style={{gridTemplateColumns:"60px 56px 70px 70px 70px 1fr"}}>
+                 style={{gridTemplateColumns:"60px 56px 70px 70px 70px 60px 1fr"}}>
               <div>類別</div>
               <div>模式</div>
               <div className="text-center">比例 %</div>
               <div className="text-center">面積 (坪)</div>
               <div className="text-center">單價 萬/坪</div>
+              <div className="text-center">查實價</div>
               <div className="text-right">小計 (萬)</div>
             </div>
             {[
@@ -4758,7 +4850,7 @@ function T1({p, sP}) {
               };
               return (
                 <div key={key} className="grid gap-1 items-center py-1 border-b border-emerald-100 last:border-b-0 text-[11px]"
-                     style={{gridTemplateColumns:"60px 56px 70px 70px 70px 1fr"}}>
+                     style={{gridTemplateColumns:"60px 56px 70px 70px 70px 60px 1fr"}}>
                   <div className="text-slate-700 font-bold">{label}</div>
                   <div>
                     <select value={mode} onChange={e=>upMix("mode", e.target.value)}
@@ -4788,8 +4880,11 @@ function T1({p, sP}) {
                     )}
                   </div>
                   {/* 單價 + (住宅) 查詢實價按鈕 */}
-                  <div className="flex items-center gap-0.5">
-                    <NI value={Number(c.uP)||0} onChange={v=>upMix("uP", Number(v)||0)} step={1} className="flex-1 text-[11px] text-center"/>
+                  <div>
+                    <NI value={Number(c.uP)||0} onChange={v=>upMix("uP", Number(v)||0)} step={1} className="w-full text-[11px] text-center"/>
+                  </div>
+                  {/* 查實價欄 */}
+                  <div>
                     {showQuery && (
                       <button onClick={async () => {
                         let county, district, sectionNo, landNo;
@@ -4815,10 +4910,15 @@ function T1({p, sP}) {
                         if (tfStr === null) return;
                         const totalFloors = parseInt(tfStr, 10);
                         if (!totalFloors || totalFloors <= 0) { alert("總樓層數必須是正整數"); return; }
+                        const priceLoadingEl = document.createElement("div");
+                        priceLoadingEl.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:99999;font-family:sans-serif;";
+                        priceLoadingEl.innerHTML = '<div style="background:#fff;padding:24px 32px;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.2);display:flex;align-items:center;gap:16px;min-width:240px;"><div style="width:24px;height:24px;border:3px solid #CCC8BD;border-top-color:#5E7350;border-radius:50%;animation:hp-spin 0.8s linear infinite;"></div><div style="font-size:14px;color:#262420;font-weight:600;">查詢實價中...<div style="font-size:12px;color:#807D73;font-weight:500;margin-top:4px;">正在向實價登錄服務查詢</div></div></div><style>@keyframes hp-spin{to{transform:rotate(360deg);}}</style>';
+                        document.body.appendChild(priceLoadingEl);
                         try {
                           const r = await apiClient.queryHousePrice({
                             county, district, section_no: sectionNo, land_no: landNo, total_floors: totalFloors
                           });
+                          priceLoadingEl.remove();
                           const wanPerPing = r.unit_price;
                           if (window.confirm(
                             `查詢結果 (${sectionNo}/${landNo}):\n單價: ${wanPerPing.toFixed(1)} 萬/坪\n\n是否將「住宅單價」設為 ${wanPerPing.toFixed(1)} 萬/坪?\n(店面、辦公售價請自行調整)`
@@ -4827,8 +4927,10 @@ function T1({p, sP}) {
                           }
                         } catch (err) {
                           alert("房價查詢失敗: " + err.message);
+                        } finally {
+                          priceLoadingEl.remove();
                         }
-                      }} title="查詢實價 (住宅)" className="px-1 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-bold rounded whitespace-nowrap">🔍</button>
+                      }} title="查詢實價登錄 (住宅)" className="w-full inline-flex items-center justify-center gap-1 px-1 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-lg transition-colors whitespace-nowrap"><Icon name="search" size={12}/>查實價</button>
                     )}
                   </div>
                   <div className="text-right font-mono text-emerald-700 font-bold">{fmt(mixCat.sales, 0)}</div>
@@ -4837,7 +4939,7 @@ function T1({p, sP}) {
             })}
             {/* 小計列 */}
             <div className="grid gap-1 items-center py-1 mt-1 border-t-2 border-emerald-300 text-[11px] font-bold"
-                 style={{gridTemplateColumns:"60px 56px 70px 70px 70px 1fr"}}>
+                 style={{gridTemplateColumns:"60px 56px 70px 70px 70px 60px 1fr"}}>
               <div className="text-emerald-800">小計</div>
               <div className="text-[10px] text-slate-400">{dr.salesMix.sumArea > 0 ? "校閱" : ""}</div>
               <div className={"text-center text-[10px] "+(dr.salesMix.overRatio?"text-rose-600 font-bold":"text-emerald-700")}>
@@ -4849,6 +4951,7 @@ function T1({p, sP}) {
                 {dr.salesMix.overArea && <span className="block text-[9px]">⚠超過</span>}
               </div>
               <div className="text-[10px] text-emerald-700 text-center">房屋總銷</div>
+              <div></div>
               <div className="text-right font-mono text-emerald-800">{fmt(dr.salesMix.houseSales, 0)}</div>
             </div>
           </div>
@@ -4972,22 +5075,22 @@ function T1({p, sP}) {
             <span className={"text-xs font-bold "+(Math.abs(p.salesSched.reduce((a,s)=>a+s.ratio,0)-1)<0.01?"text-emerald-600":"text-rose-600")}>合計{(p.salesSched.reduce((a,s)=>a+s.ratio,0)*100).toFixed(0)}%</span>
           </div>
         </div>
-        <F l="訂簽開比例" f="depR" step={0.05}/><F l="交屋尾款比例" f="comR" step={0.05}/>
+        {F({l:"訂簽開比例", f:"depR", step:0.05})}{F({l:"交屋尾款比例", f:"comR", step:0.05})}
       </Card>
 
       {/* ── 四、建商成本與融資 ── */}
-      <Card title="四、建商成本與融資" accent="bg-amber-800" icon="wrench">
+      <Card title="四、建商成本與融資" accent="bg-sky-800" icon="wrench">
         <CostItemsEditor p={p} sP={sP} dr={dr}/>
         <div className="mt-3 pt-3 border-t-2 border-slate-200">
           <div className="text-xs font-bold text-slate-500 mb-2 inline-flex items-center gap-1.5"><Icon name="building" size={12}/> 融資設定</div>
-          <F l="土融利率" f="lLR" step={0.0025}/><F l="建融利率" f="cLR" step={0.0025}/><F l="土融成數" f="lLTV" step={0.05}/><F l="建融成數" f="cLTV" step={0.05}/><F l="房地合一稅率" f="itR" step={0.05}/>
-          <LoanSched title={<span className="inline-flex items-center gap-1"><Icon name="building" size={11}/> 土融動撥</span>} schedKey="landLoanSched" color="border-sky-200 bg-sky-50/50"/>
-          <LoanSched title={<span className="inline-flex items-center gap-1"><Icon name="construction" size={11}/> 建融動撥</span>} schedKey="constLoanSched" color="border-amber-200 bg-amber-50/50"/>
+          {F({l:"土融利率", f:"lLR", step:0.0025})}{F({l:"建融利率", f:"cLR", step:0.0025})}{F({l:"土融成數", f:"lLTV", step:0.05})}{F({l:"建融成數", f:"cLTV", step:0.05})}{F({l:"房地合一稅率", f:"itR", step:0.05})}
+          {LoanSched({title:<span className="inline-flex items-center gap-1"><Icon name="building" size={11}/> 土融動撥</span>, schedKey:"landLoanSched", color:"border-sky-200 bg-sky-50/50"})}
+          {LoanSched({title:<span className="inline-flex items-center gap-1"><Icon name="construction" size={11}/> 建融動撥</span>, schedKey:"constLoanSched", color:"border-amber-200 bg-amber-50/50"})}
         </div>
       </Card>
 
       {/* ── 五、費用支出時程表 ── */}
-      <Card title="五、費用支出時程" accent="bg-rose-800" icon="bar-chart-3" className="lg:col-span-2">
+      <Card title="五、費用支出時程" accent="bg-sky-800" icon="bar-chart-3" className="lg:col-span-2">
         {/* 本案開發期 (連動全系統) */}
         <div className="mb-3 p-3 bg-gradient-to-r from-amber-50 to-amber-50 rounded-xl border-2 border-amber-300">
           <div className="flex items-center justify-between flex-wrap gap-2">
@@ -5037,8 +5140,8 @@ function T1({p, sP}) {
         <div className="text-xs text-slate-500 mb-3">各費用依專案階段分配比例 (可手動調整%)</div>
         <div className="overflow-x-auto rounded-xl border">
           <table className="w-full text-[11px]" style={{minWidth:700}}>
-            <thead><tr className="bg-emerald-600 text-white">
-              <th className="py-2 px-2 text-left font-bold sticky left-0 bg-emerald-600 z-10" style={{minWidth:130}}>費用項目</th>
+            <thead><tr className="bg-slate-600 text-white">
+              <th className="py-2 px-2 text-left font-bold sticky left-0 bg-slate-600 z-10" style={{minWidth:130}}>費用項目</th>
               {p.expPeriods.map((ep,i)=>(
                 <th key={i} className="py-2 px-1 text-center" style={{minWidth:85}}>
                   <div className="font-bold text-[10px]">{ep.year}.{ep.month}</div>
@@ -5111,7 +5214,7 @@ function T1({p, sP}) {
       </Card>
 
       {/* ── 六、合建分回·地主費用·土增稅·契稅 ── */}
-      <Card title="六、合建分回·地主費用·土增稅·契稅" accent="bg-violet-800" icon="user" className="lg:col-span-2">
+      <Card title="六、合建分回·地主費用·土增稅·契稅" accent="bg-sky-800" icon="user" className="lg:col-span-2">
         <div className="bg-slate-50 -mx-4 -mt-3 px-4 py-3 border-b mb-3">
           {/* 我的身分選擇器（兩層式） */}
           <div className="mb-3 p-3 bg-gradient-to-r from-amber-50 to-amber-50 rounded-lg border border-amber-300">
@@ -5472,7 +5575,7 @@ function T1({p, sP}) {
         {p.jb && <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div>
             <div className="text-xs font-bold text-slate-500 mb-2">費率（地主端）</div>
-            <F l="廣告銷售費率" f="oAdR" step={0.005}/><F l="稅雜費率" f="oTxR" step={0.005}/><F l="物管費率" f="oMgR" step={0.001}/>
+            {F({l:"廣告銷售費率", f:"oAdR", step:0.005})}{F({l:"稅雜費率", f:"oTxR", step:0.005})}{F({l:"物管費率", f:"oMgR", step:0.001})}
             <div className="mt-2 text-[10px] text-slate-500 italic bg-slate-50 rounded p-2 border border-slate-200">
               ℹ️ 土地增值稅已整合至「七、經營分析」的土地稅制設定 (依新/舊制自動計算)。
             </div>
@@ -5553,41 +5656,8 @@ function T6({p, sP}) {
   const updCustom = (id, k, v) => sP({...p, bonusCustom: (p.bonusCustom||[]).map(c => c.id===id ? {...c,[k]:v} : c)});
   const delCustom = (id) => sP({...p, bonusCustom: (p.bonusCustom||[]).filter(c => c.id!==id)});
 
-  /* Row 元件：支援手動覆寫 */
-  const Row = ({k, label, formula, result, unit="坪", note, accent="navy"}) => {
-    const overridden = k && isOver(k);
-    const accentCls =
-      accent==="gold" ? "bg-amber-50 border-amber-300" :
-      accent==="result" ? "bg-emerald-600 border-emerald-600 text-white" :
-      "bg-slate-50 border-slate-200";
-    const labelCls = accent==="result"?"text-amber-200":"text-slate-700";
-    const formulaCls = accent==="result"?"text-slate-300":"text-slate-400";
-    const numCls = accent==="gold"?"text-amber-800":accent==="result"?"text-amber-200":"text-slate-700";
-    return (
-      <div className={"flex items-center justify-between py-2 px-3 rounded-lg border " + accentCls + (overridden ? " ring-2 ring-rose-300" : "")}>
-        <div className="flex-1 min-w-0">
-          <div className={"text-xs font-bold " + labelCls}>{label}{overridden && <span className="ml-2 text-[9px] bg-rose-200 text-rose-800 px-1 py-0.5 rounded">手動覆寫</span>}</div>
-          {formula && <div className={"text-[10px] mt-0.5 " + formulaCls}>{formula}</div>}
-          {note && <div className="text-[10px] text-slate-400 italic mt-0.5">{note}</div>}
-        </div>
-        <div className="flex items-center gap-1 ml-2 shrink-0">
-          {overridden ? (
-            <>
-              <NI value={mo[k]} onChange={v=>setOver(k,v)} step={0.01} className={"w-24 text-right "+(accent==="result"?"text-slate-900":"")}/>
-              <span className={"text-[10px] " + (accent==="result"?"text-slate-300":"text-slate-400")}>{unit}</span>
-              <button onClick={()=>clrOver(k)} title="回復公式自動值" className="text-rose-400 hover:text-rose-600 text-sm leading-none px-1">↻</button>
-            </>
-          ) : (
-            <>
-              <span className={"font-mono font-black text-base "+numCls}>{fmt(result, 2)}</span>
-              <span className={"text-[10px] opacity-70 "+numCls}>{unit}</span>
-              {k && <button onClick={()=>setOver(k, +result.toFixed(2))} title="手動覆寫此值" className={"leading-none px-1 " + (accent==="result"?"text-slate-300 hover:text-white":"text-slate-300 hover:text-slate-600")}><Icon name="pencil" size={12}/></button>}
-            </>
-          )}
-        </div>
-      </div>
-    );
-  };
+  /* Row 元件已搬到模組頂層 (AreaRow, 避免每次 render 重建導致 input 掉 focus); 此處備好其 closure 依賴 */
+  const rowCtx = {isOver, mo, setOver, clrOver};
 
   /* zone 預設顯示提示 */
   const zoneNote = <span className="text-[10px] text-slate-400 italic">加權繼承基準: 建蔽率 {((ar.zoneBCR||0)*100).toFixed(1)}% / 容積率 {((ar.zoneFAR||0)*100).toFixed(1)}%</span>;
@@ -5598,6 +5668,7 @@ function T6({p, sP}) {
       <Card title="建築規劃精算開關" accent="bg-sky-700" icon="settings">
         <Chk ck={!!ac.enable} onChange={v=>upAC("enable", v)}
           l="啟用此分頁精算結果作為總銷面積來源"
+          inline={false}
           sub="勾選後，T1 基本假設、損益分析、現金流、敏感度都會使用以下計算的『總銷面積』、『戶數』、『車位』數值"/>
         {ac.enable && <div className="mt-2 p-2 bg-emerald-50 rounded-lg border border-emerald-200 text-[11px] text-emerald-700 inline-flex items-center gap-1">
           <Icon name="check" size={12}/> 已啟用 — 修改下方任何欄位將即時影響全系統計算
@@ -5682,7 +5753,7 @@ function T6({p, sP}) {
             </div>
           ))}
         </div>
-        <Row k="bcr_total" label="允建建築合計" formula={`Σ(基地 × 建蔽率)`} result={ar.bcr_total} accent="gold"/>
+        <AreaRow ctx={rowCtx} k="bcr_total" label="允建建築合計" formula={`Σ(基地 × 建蔽率)`} result={ar.bcr_total} accent="gold"/>
 
         <div className="mt-3 p-3 bg-sky-50 rounded-lg border border-sky-200">
           <Chk ck={!!ac.useOrigCap} onChange={v=>upAC("useOrigCap",v)} l="使用原始容積計算 (替代建蔽率合計)"/>
@@ -5715,7 +5786,7 @@ function T6({p, sP}) {
             </div>
           ))}
         </div>
-        <Row k="fa_total" label="基準容積合計 FA" formula="Σ(基地 × 容積率)" result={ar.fa_total} accent="gold"/>
+        <AreaRow ctx={rowCtx} k="fa_total" label="基準容積合計 FA" formula="Σ(基地 × 容積率)" result={ar.fa_total} accent="gold"/>
       </Card>
 
       {/* 4. 容積獎勵 (階層化) */}
@@ -5744,6 +5815,7 @@ function T6({p, sP}) {
                     onChange={v => toggleBI(item.k, v)}
                     disabled={isChild && !parentOn}
                     l={<span className={isChild?"text-[12px]":"font-semibold"}>{item.l.trim()}{isKH && " 🌴"}</span>}
+                    inline={false}
                     sub={<span className="text-[10px]">{item.ds} {!["dangold","urban","transfer"].includes(item.k) && <span className="text-slate-400">(上限 {item.mx}%)</span>}</span>}/>
                   {on && parentOn && (
                     <div className="flex items-center gap-2 ml-2 shrink-0">
@@ -5793,24 +5865,24 @@ function T6({p, sP}) {
 
         {/* 獎勵彙總 */}
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <Row k="bonus_total" label="獎勵面積合計" result={ar.bonus_total} accent="gold"/>
-          <Row k="tod_total" label="計入162條獎勵" result={ar.tod_total} note={`(${ar.bonus_pct}% 合計)`} accent="gold"/>
+          <AreaRow ctx={rowCtx} k="bonus_total" label="獎勵面積合計" result={ar.bonus_total} accent="gold"/>
+          <AreaRow ctx={rowCtx} k="tod_total" label="計入162條獎勵" result={ar.tod_total} note={`(${ar.bonus_pct}% 合計)`} accent="gold"/>
         </div>
       </Card>
 
       {/* 5. 允建容積合計 */}
       <Card title="⑤ 允建容積合計 Σ FA" accent="bg-amber-700">
-        <Row k="sigma_fa" label="允建容積 = FA + 容積獎勵" formula={`${fmt(ar.fa_total)} + ${fmt(ar.bonus_total)}`} result={ar.sigma_fa} accent="result"/>
+        <AreaRow ctx={rowCtx} k="sigma_fa" label="允建容積 = FA + 容積獎勵" formula={`${fmt(ar.fa_total)} + ${fmt(ar.bonus_total)}`} result={ar.sigma_fa} accent="result"/>
       </Card>
 
       {/* 6. 機電 */}
       <Card title="⑥ 機電空間 (技術規則162條 15%)" accent="bg-slate-700">
-        <Row k="mech" label="機電空間" formula={`(FA + 計入162條獎勵) × 15% = (${fmt(ar.fa_total)} + ${fmt(ar.tod_total)}) × 15%`} result={ar.mech} accent="gold"/>
+        <AreaRow ctx={rowCtx} k="mech" label="機電空間" formula={`(FA + 計入162條獎勵) × 15% = (${fmt(ar.fa_total)} + ${fmt(ar.tod_total)}) × 15%`} result={ar.mech} accent="gold"/>
       </Card>
 
       {/* 7. 梯廳 */}
       <Card title="⑦ 地上梯廳" accent="bg-slate-700">
-        <Row k="elevator" label="地上梯廳面積" formula={`(${fmt(ar.sigma_fa)} + ${fmt(ar.mech)}) ÷ 0.93 × 0.07`} result={ar.elevator} accent="gold"/>
+        <AreaRow ctx={rowCtx} k="elevator" label="地上梯廳面積" formula={`(${fmt(ar.sigma_fa)} + ${fmt(ar.mech)}) ÷ 0.93 × 0.07`} result={ar.elevator} accent="gold"/>
         <div className="mt-2"><div className="flex items-center justify-between py-2 px-3 rounded-lg bg-slate-100 border">
           <div className="text-xs font-bold text-slate-700">地面層以上面積合計 (結構)</div>
           <div className="text-right ml-2 text-slate-700"><span className="font-mono font-black text-base">{fmt(ar.above_struct, 2)}</span><span className="text-[10px] ml-1 opacity-70">坪</span></div>
@@ -5819,7 +5891,7 @@ function T6({p, sP}) {
 
       {/* 8. 陽台 */}
       <Card title="⑧ 陽台 (8%)" accent="bg-slate-700">
-        <Row k="balcony" label="陽台面積" formula={`地面層以上 × 8%`} result={ar.balcony} accent="gold"/>
+        <AreaRow ctx={rowCtx} k="balcony" label="陽台面積" formula={`地面層以上 × 8%`} result={ar.balcony} accent="gold"/>
         <div className="mt-3 flex items-center justify-between p-2 bg-sky-50 rounded-lg border border-sky-200">
           <span className="text-xs text-slate-600">地上樓層數</span>
           <NI value={ac.aboveFloors||0} onChange={v=>upAC("aboveFloors",v)} min={1} className="w-20 text-right"/>
@@ -5841,8 +5913,8 @@ function T6({p, sP}) {
               <span className="text-[10px] text-slate-400">坪</span>
             </div>
           </div>
-          <Row k="kh_a" label="A. 景觀陽台" formula={`地上層 × 12.5% − ${fmt(ac.noViewBalcony||0)}`} result={ar.kh_a} accent="gold"/>
-          <div className="mt-2"><Row k="kh_b" label="B. 通用化設計" formula={`FA × 2%`} result={ar.kh_b} accent="gold"/></div>
+          <AreaRow ctx={rowCtx} k="kh_a" label="A. 景觀陽台" formula={`地上層 × 12.5% − ${fmt(ac.noViewBalcony||0)}`} result={ar.kh_a} accent="gold"/>
+          <div className="mt-2"><AreaRow ctx={rowCtx} k="kh_b" label="B. 通用化設計" formula={`FA × 2%`} result={ar.kh_b} accent="gold"/></div>
           <div className="mt-2"><div className="flex items-center justify-between py-2 px-3 rounded-lg bg-amber-100 border">
             <div className="text-xs font-bold text-amber-800">高雄厝合計 A + B</div>
             <div className="text-right ml-2 text-amber-800"><span className="font-mono font-black text-base">{fmt(ar.kh_total, 2)}</span><span className="text-[10px] ml-1 opacity-70">坪</span></div>
@@ -5852,7 +5924,7 @@ function T6({p, sP}) {
 
       {/* 10. 屋頂突出物 */}
       <Card title="⑩ 屋頂突出物" accent="bg-slate-700">
-        <Row k="rooftop" label="屋頂突出物面積" formula={`允建建築面積 × 15% × 3`} result={ar.rooftop} accent="gold"/>
+        <AreaRow ctx={rowCtx} k="rooftop" label="屋頂突出物面積" formula={`允建建築面積 × 15% × 3`} result={ar.rooftop} accent="gold"/>
       </Card>
 
       {/* 地上層合計 */}
@@ -5868,7 +5940,7 @@ function T6({p, sP}) {
           </>}
           <div className="p-2 bg-slate-50 rounded border"><div className="text-slate-400">⑩屋頂</div><div className="font-mono font-bold">{fmt(ar.rooftop)}</div></div>
         </div>
-        <Row k="above_total" label="地上層面積合計" result={ar.above_total} accent="result"/>
+        <AreaRow ctx={rowCtx} k="above_total" label="地上層面積合計" result={ar.above_total} accent="result"/>
       </Card>
 
       {/* 11. 地下室 */}
@@ -5898,12 +5970,12 @@ function T6({p, sP}) {
             )}
           </div>
         </div>
-        <Row k="basement" label="地下室開挖面積" formula={`基地 × ${ar.drill_ratio.toFixed(4)} × ${ac.basementFloors||0} 層`} result={ar.basement} accent="gold"/>
+        <AreaRow ctx={rowCtx} k="basement" label="地下室開挖面積" formula={`基地 × ${ar.drill_ratio.toFixed(4)} × ${ac.basementFloors||0} 層`} result={ar.basement} accent="gold"/>
       </Card>
 
       {/* 12. 總樓地板 */}
       <Card title="⑫ 總樓地板面積" accent="bg-amber-600" icon="construction">
-        <Row k="total_floor" label="總樓地板 = 地上 + 地下" formula={`${fmt(ar.above_total)} + ${fmt(ar.basement)}`} result={ar.total_floor} accent="result"/>
+        <AreaRow ctx={rowCtx} k="total_floor" label="總樓地板 = 地上 + 地下" formula={`${fmt(ar.above_total)} + ${fmt(ar.basement)}`} result={ar.total_floor} accent="result"/>
       </Card>
 
       {/* 13-15. 車位、可銷、總銷 — 含 透天 選項 */}
@@ -5913,12 +5985,14 @@ function T6({p, sP}) {
           <Chk ck={!!ac.townhouse}
             onChange={v=>upAC("townhouse", v)}
             l="透天住宅"
+            inline={false}
             sub="勾選後每車位面積自動設為 44 m² (≈ 13.31 坪)"/>
           {ac.townhouse && (
             <div className="mt-2 ml-6">
               <Chk ck={!!ac.townhouseInSalable}
                 onChange={v=>upAC("townhouseInSalable", v)}
                 l="車位面積納入可銷售面積"
+                inline={false}
                 sub="勾選後地下室不扣除車位 (整層算入可銷)"/>
             </div>
           )}
@@ -5938,8 +6012,8 @@ function T6({p, sP}) {
               <span className="text-[10px] text-slate-400">坪/位{ac.townhouse && " (透天44m²)"}</span>
             </div>
           </div>
-          <Row k="parking_area" label="⑬ 車位登記面積" formula={`${p.parking||0} 輛 × ${ar.parkArea_per_auto.toFixed(2)} 坪`} result={ar.parking_area} accent="gold"/>
-          <Row k="bsmt_sale"
+          <AreaRow ctx={rowCtx} k="parking_area" label="⑬ 車位登記面積" formula={`${p.parking||0} 輛 × ${ar.parkArea_per_auto.toFixed(2)} 坪`} result={ar.parking_area} accent="gold"/>
+          <AreaRow ctx={rowCtx} k="bsmt_sale"
             label="⑭ 地下室可銷售坪數"
             formula={
               ac.townhouse
@@ -5949,7 +6023,7 @@ function T6({p, sP}) {
                 : `地下室 − 車位 = ${fmt(ar.basement)} − ${fmt(ar.parking_area)}`}
             result={ar.bsmt_sale}
             accent="gold"/>
-          <Row k="total_sale"
+          <AreaRow ctx={rowCtx} k="total_sale"
             label="⑮ 總銷面積"
             formula={ac.townhouse
               ? `透天: 地上層 + ⑬ 車位 = ${fmt(ar.above_total)} + ${fmt(ar.parking_area)}`
@@ -6001,7 +6075,7 @@ function T6({p, sP}) {
             <span className="text-[10px] text-slate-400">坪/戶</span>
           </div>
         </div>
-        <Row label="總戶數" formula={`總銷 ÷ 坪/戶 = ${fmt(ar.total_sale)} ÷ ${ac.unitArea||50}`} result={ar.units_floor} unit="戶" accent="result"/>
+        <AreaRow ctx={rowCtx} label="總戶數" formula={`總銷 ÷ 坪/戶 = ${fmt(ar.total_sale)} ÷ ${ac.unitArea||50}`} result={ar.units_floor} unit="戶" accent="result"/>
       </Card>
 
       {/* 停車計算 */}
@@ -6062,18 +6136,6 @@ function T7({p, sP}) {
     sP({...p, compBenefit: {...cb, disposals: list.length>0 ? list : [{id:1, label:"完工出售", year:2028, month:6, area:0, price:0, enabled:true}]}});
   };
 
-  const YearSel = ({v, onChange, className=""}) => (
-    <select value={v||2028} onChange={e=>onChange(parseInt(e.target.value,10))}
-      className={"text-xs border rounded px-1 py-0.5 bg-slate-50 "+className}>
-      {Array.from({length:61}, (_,i)=>2020+i).map(y => <option key={y} value={y}>{y}</option>)}
-    </select>
-  );
-  const MonSel = ({v, onChange, className=""}) => (
-    <select value={v||1} onChange={e=>onChange(parseInt(e.target.value,10))}
-      className={"text-xs border rounded px-1 py-0.5 bg-slate-50 "+className}>
-      {Array.from({length:12}, (_,i)=>i+1).map(m => <option key={m} value={m}>{m}月</option>)}
-    </select>
-  );
 
   const mode = cb.mode || "single";
   const isOwner = (ce.myRole || "").startsWith("owner_");
@@ -6710,7 +6772,7 @@ function T7({p, sP}) {
           </div>
 
           {/* 房地合一稅試算 */}
-          <TaxBlock holdY={ce.holdYears} taxableBase={ce.single.taxableBase} taxInfo={ce.single.taxInfo}/>
+          {TaxBlock({holdY:ce.holdYears, taxableBase:ce.single.taxableBase, taxInfo:ce.single.taxInfo})}
 
           {/* 效益總額 */}
           <div className="mt-3 grid grid-cols-2 gap-3">
@@ -6860,7 +6922,7 @@ function T7({p, sP}) {
 
           {/* 全域納稅人選擇 (適用所有筆) */}
           <div className="mt-3 pt-3 border-t border-slate-200">
-            <TaxBlock holdY={ce.holdYears} taxableBase={0} taxInfo={{label:"(依各筆獨立計算)", tax:ce.longHold.pd_sumTax}} prefix="-multi" multiMode={true}/>
+            {TaxBlock({holdY:ce.holdYears, taxableBase:0, taxInfo:{label:"(依各筆獨立計算)", tax:ce.longHold.pd_sumTax}, prefix:"-multi", multiMode:true})}
           </div>
         </div>
 
@@ -8135,8 +8197,8 @@ function T3({p}) {
       {/* 上方 KPI — 統一用 snap 系列指標 (依「分析模式」變動) */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         <KPI label="稅後淨利" value={fmt(snap.totalProfit)} unit="萬" color={snap.totalProfit<0?"text-rose-700":"text-emerald-700"} bg={snap.totalProfit<0?"bg-rose-50/80":"bg-emerald-50/80"}/>
-        <KPI label="ROI" value={(snap.burdenCost+snap.ll+snap.cl)>0 ? (snap.roi*100).toFixed(1)+"%" : "—"} color="text-violet-700" bg="bg-violet-50/80"/>
-        <KPI label="IRR" value={snap.irr==null?"—":(snap.irr*100).toFixed(2)+"%"} color="text-violet-700" bg="bg-violet-50/80"/>
+        <KPI label="ROI" value={(snap.burdenCost+snap.ll+snap.cl)>0 ? (snap.roi*100).toFixed(1)+"%" : "—"} color="text-tan-700" bg="bg-tan-50/80"/>
+        <KPI label="IRR" value={snap.irr==null?"—":(snap.irr*100).toFixed(2)+"%"} color="text-tan-700" bg="bg-tan-50/80"/>
         <KPI label="還本期" value={snap.payback==null?"—":Math.ceil(snap.payback)+" 年"} color="text-emerald-700" bg="bg-sky-50/80"/>
         <KPI label="投資年期" value={investYears} unit="年" color="text-slate-800" bg="bg-slate-50/80"/>
       </div>
@@ -9191,14 +9253,10 @@ function exportProjectToExcel(project) {
 /* ════════════════════════════════════════
    專案管理 ProjectManager 元件
 ════════════════════════════════════════ */
-function ProjectManager({projects, currentId, dirty, projectName, setProjectName, onSave, onLoad, onNew, onDelete, onExport, onImport, onRename, onExportExcel, onCloudPush, onCloudPull, onSeedTest}) {
+function ProjectManager({projects, currentId, dirty, projectName, setProjectName, onSave, onLoad, onNew, onDelete, onExport, onImport, onExportExcel, onCloudPush, onCloudPull, onSeedTest}) {
   const isSaved = currentId && !dirty;
-  const [editingId, sEI] = useState(null);
-  const [editName, sEN] = useState("");
   const [listExpanded, sLE] = useState(true);
   const sorted = [...projects].sort((a,b) => (b.updatedAt||0) - (a.updatedAt||0));
-  const startRename = (pr) => { sEI(pr.id); sEN(pr.name); };
-  const commitRename = () => { if (editingId && editName.trim()) onRename(editingId, editName.trim()); sEI(null); };
   return (
     <div className="p-3 bg-white rounded-2xl border shadow-sm">
         {/* ── 目前專案 (可編輯名稱 + 儲存狀態 + 儲存/匯出) ── */}
@@ -9277,12 +9335,12 @@ function ProjectManager({projects, currentId, dirty, projectName, setProjectName
                 <div style="font-size:15px;font-weight:700;color:#262420;">新增專案</div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                   <button id="np-blank" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 16px;background:#F5F3EE;border:2px solid #E2DFD7;border-radius:12px;cursor:pointer;transition:all 0.15s;font-family:inherit;" onmouseover="this.style.background='#F4F6F2';this.style.borderColor='#5E7350';" onmouseout="this.style.background='#F5F3EE';this.style.borderColor='#E2DFD7';">
-                    <div style="font-size:32px;line-height:1;">✨</div>
+                    <div style="line-height:1;">${licon('file-plus',28,'#5E7350')}</div>
                     <div style="font-size:13px;font-weight:700;color:#262420;">從空白開始</div>
                     <div style="font-size:11px;color:#807D73;text-align:center;line-height:1.4;">建立一份全新的空白專案</div>
                   </button>
                   <label id="np-import" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 16px;background:#F5F3EE;border:2px solid #E2DFD7;border-radius:12px;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='#F4F6F2';this.style.borderColor='#5E7350';" onmouseout="this.style.background='#F5F3EE';this.style.borderColor='#E2DFD7';">
-                    <div style="font-size:32px;line-height:1;">📥</div>
+                    <div style="line-height:1;">${licon('upload',28,'#5E7350')}</div>
                     <div style="font-size:13px;font-weight:700;color:#262420;">從 JSON 匯入</div>
                     <div style="font-size:11px;color:#807D73;text-align:center;line-height:1.4;">讀取備份檔還原專案</div>
                     <input id="np-file" type="file" accept=".json" style="display:none;"/>
@@ -9309,29 +9367,13 @@ function ProjectManager({projects, currentId, dirty, projectName, setProjectName
                 const d = pr.updatedAt ? new Date(pr.updatedAt) : null;
                 const ds = d ? `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}` : "";
                 const active = currentId === pr.id;
-                if (editingId === pr.id) {
-                  return (
-                    <div key={pr.id} className="flex items-center gap-1 p-1.5 rounded-lg border-2 border-amber-400 bg-amber-50">
-                      <input
-                        type="text" value={editName}
-                        onChange={e=>sEN(e.target.value)}
-                        onKeyDown={e=>{if(e.key==="Enter")commitRename(); if(e.key==="Escape")sEI(null)}}
-                        className="flex-1 px-1 py-0.5 text-[11px] border rounded bg-white"
-                        autoFocus/>
-                      <button onClick={commitRename} className="text-emerald-600 leading-none inline-flex items-center" title="確認"><Icon name="check" size={14}/></button>
-                      <button onClick={()=>sEI(null)} className="text-rose-500 leading-none inline-flex items-center" title="取消"><Icon name="x" size={14}/></button>
-                    </div>
-                  );
-                }
                 return (
                   <div key={pr.id} className={"flex items-center gap-1 p-1.5 rounded-lg border transition-colors "+(active?"border-sky-400 bg-sky-100":"border-slate-200 bg-slate-50/60 hover:bg-slate-100")}>
                     <button onClick={()=>onLoad(pr.id)} className={"flex-1 text-left text-[11px] truncate "+(active?"font-bold text-emerald-800":"font-semibold text-slate-700")} title={pr.name}>
                       {active && "▸ "}{pr.name}
                       {ds && <div className="text-[8px] text-slate-400 font-normal">{ds}</div>}
                     </button>
-                    <button onClick={()=>onExportExcel(pr)} className="text-slate-400 hover:text-amber-600 px-1 inline-flex items-center" title="匯出此專案 Excel"><Icon name="bar-chart-3" size={12}/></button>
-                    <button onClick={()=>startRename(pr)} className="text-slate-400 hover:text-emerald-500 px-1" title="重新命名"><Icon name="pencil" size={12}/></button>
-                    <button onClick={()=>onDelete(pr.id, pr.name)} className="text-slate-400 hover:text-rose-500 text-lg leading-none px-1" title="刪除">×</button>
+                    <button onClick={()=>onDelete(pr.id, pr.name)} className="text-slate-400 hover:text-rose-600 px-1 inline-flex items-center" title="刪除"><Icon name="trash-2" size={13}/></button>
                   </div>
                 );
               })}
@@ -9610,11 +9652,6 @@ function MainApp({session, onLogout}) {
     refreshProjects();
   };
 
-  const renameProject = (id, newName) => {
-    store.renameProject(session.userId, id, newName);
-    if (currentId === id) setProjectName(newName);
-    refreshProjects();
-  };
 
   const exportProjects = () => {
     const payload = { version: "v8", exportedAt: new Date().toISOString(), projects };
@@ -9717,7 +9754,7 @@ function MainApp({session, onLogout}) {
           {/* Right: 目前專案 + KPI + 設定 + 帳號 */}
           <div className="hidden md:flex items-center gap-3">
             <div className="flex gap-5">
-              {[{l:"總銷",v:fmt(dr.ts)},{l:"淨利",v:fmt(base.pat),c:base.pat>0?"text-emerald-700":"text-rose-600"},{l:"淨利率",v:pct(base.nm)},{l:"ROI",v:headerROI}].map((m,i)=>(
+              {[{l:"總銷",v:fmt(dr.ts)},{l:"淨利",v:fmt(base.pat),c:base.pat>0?"text-emerald-700":"text-rose-600"},{l:"淨利率",v:pct(base.nm)},{l:"ROI",v:headerROI,c:"text-tan-700"}].map((m,i)=>(
                 <div key={i} className="text-center">
                   <div className="text-[9px] text-slate-500 uppercase tracking-wide">{m.l}</div>
                   <div className={"font-bold text-sm font-mono "+(m.c||"text-slate-900")}>{m.v}</div>
@@ -9752,7 +9789,7 @@ function MainApp({session, onLogout}) {
       <div className="max-w-[1440px] mx-auto flex relative">
         {mm && <div className="fixed inset-0 bg-black/30 z-30 lg:hidden" onClick={()=>sMM(false)}/>}
         {/* Sidebar */}
-        <aside className={"fixed lg:static top-0 left-0 z-40 lg:z-0 h-screen lg:h-auto w-64 shrink-0 bg-white lg:bg-transparent border-r lg:border-r-0 transition-transform duration-300 overflow-y-auto lg:overflow-visible "+(mm?"translate-x-0":"-translate-x-full lg:translate-x-0")}>
+        <aside className={"fixed lg:sticky lg:self-start top-[68px] left-0 z-40 lg:z-0 h-[calc(100dvh-68px)] w-64 shrink-0 bg-white lg:bg-transparent border-r lg:border-r-0 transition-transform duration-300 overflow-y-auto "+(mm?"translate-x-0":"-translate-x-full lg:translate-x-0")}>
           <nav className="p-3 space-y-2 lg:pt-5">
             {/* 專案管理 */}
             <ProjectManager
@@ -9765,7 +9802,6 @@ function MainApp({session, onLogout}) {
               onLoad={loadProject}
               onNew={newProject}
               onDelete={deleteProject}
-              onRename={renameProject}
               onExport={exportProjects}
               onImport={importProjects}
               onExportExcel={exportExcel}
