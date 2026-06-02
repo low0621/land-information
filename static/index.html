@@ -8,17 +8,65 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
+<script>
+/* ════════════════════════════════════════════════════════════
+   Sage / 暖奶油 設計系統 — 色階覆寫 (全面和諧化)
+   參考: sage-green + warm-cream dashboard
+   做法: 覆寫 Tailwind 內建色階，全站既有 utility class 自動換色
+   結構 DNA 沿用 Soft Glass: 大圓角 / 雙光源柔光陰影 / 克制強調色 / 400·600 字重 / 不用純黑
+════════════════════════════════════════════════════════════ */
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        /* ── 系 1：暖灰中性骨幹 ── 收斂後 amber/sky/violet 全部併入此系 */
+        slate:  {50:"#F5F3EE",100:"#ECEAE3",200:"#E2DFD7",300:"#CCC8BD",400:"#9C998F",500:"#807D73",600:"#6A685F",700:"#54524A",800:"#393730",900:"#262420",950:"#171511"},
+        gray:   {50:"#F5F3EE",100:"#ECEAE3",200:"#E2DFD7",300:"#CCC8BD",400:"#9C998F",500:"#807D73",600:"#6A685F",700:"#54524A",800:"#393730",900:"#262420",950:"#171511"},
+        amber:  {50:"#F5F3EE",100:"#ECEAE3",200:"#E2DFD7",300:"#CCC8BD",400:"#9C998F",500:"#807D73",600:"#6A685F",700:"#54524A",800:"#393730",900:"#262420",950:"#171511"},
+        yellow: {50:"#F5F3EE",100:"#ECEAE3",200:"#E2DFD7",300:"#CCC8BD",400:"#9C998F",500:"#807D73",600:"#6A685F",700:"#54524A",800:"#393730",900:"#262420",950:"#171511"},
+        orange: {50:"#F5F3EE",100:"#ECEAE3",200:"#E2DFD7",300:"#CCC8BD",400:"#9C998F",500:"#807D73",600:"#6A685F",700:"#54524A",800:"#393730",900:"#262420",950:"#171511"},
+        /* sky = sage 但整體往淺移兩階 (使用者覺得太重) */
+        sky:    {50:"#F4F6F2",100:"#F4F6F2",200:"#F4F6F2",300:"#E7ECE2",400:"#CFD9C7",500:"#B0C0A4",600:"#8FA47F",700:"#728B5F",800:"#5E7350",900:"#4D5E42",950:"#3D4B36"},
+        blue:   {50:"#F5F3EE",100:"#ECEAE3",200:"#E2DFD7",300:"#CCC8BD",400:"#9C998F",500:"#807D73",600:"#6A685F",700:"#54524A",800:"#393730",900:"#262420",950:"#171511"},
+        cyan:   {50:"#F5F3EE",100:"#ECEAE3",200:"#E2DFD7",300:"#CCC8BD",400:"#9C998F",500:"#807D73",600:"#6A685F",700:"#54524A",800:"#393730",900:"#262420",950:"#171511"},
+        indigo: {50:"#F5F3EE",100:"#ECEAE3",200:"#E2DFD7",300:"#CCC8BD",400:"#9C998F",500:"#807D73",600:"#6A685F",700:"#54524A",800:"#393730",900:"#262420",950:"#171511"},
+        violet: {50:"#F5F3EE",100:"#ECEAE3",200:"#E2DFD7",300:"#CCC8BD",400:"#9C998F",500:"#807D73",600:"#6A685F",700:"#54524A",800:"#393730",900:"#262420",950:"#171511"},
+        purple: {50:"#F5F3EE",100:"#ECEAE3",200:"#E2DFD7",300:"#CCC8BD",400:"#9C998F",500:"#807D73",600:"#6A685F",700:"#54524A",800:"#393730",900:"#262420",950:"#171511"},
+        /* ── 系 2：主色 sage 綠 + 正向 ── 偏黃綠/橄欖 (取代 emerald / green / teal) */
+        emerald: {50:"#F4F6F2",100:"#E7ECE2",200:"#CFD9C7",300:"#B0C0A4",400:"#8FA47F",500:"#728B5F",600:"#5E7350",700:"#4D5E42",800:"#3D4B36",900:"#2F3A2B",950:"#1E2519"},
+        green:   {50:"#F4F6F2",100:"#E7ECE2",200:"#CFD9C7",300:"#B0C0A4",400:"#8FA47F",500:"#728B5F",600:"#5E7350",700:"#4D5E42",800:"#3D4B36",900:"#2F3A2B",950:"#1E2519"},
+        teal:    {50:"#F4F6F2",100:"#E7ECE2",200:"#CFD9C7",300:"#B0C0A4",400:"#8FA47F",500:"#728B5F",600:"#5E7350",700:"#4D5E42",800:"#3D4B36",900:"#2F3A2B",950:"#1E2519"},
+        /* ── 系 3：負向陶土紅 ── (取代 rose / red) */
+        rose: {50:"#F8EDE9",100:"#F0DAD2",200:"#E4BCAF",300:"#D69C8B",400:"#C87A66",500:"#BC6149",600:"#A9543D",700:"#8E4633",800:"#723829",900:"#5A2C20",950:"#3C1D15"},
+        red:  {50:"#F8EDE9",100:"#F0DAD2",200:"#E4BCAF",300:"#D69C8B",400:"#C87A66",500:"#BC6149",600:"#A9543D",700:"#8E4633",800:"#723829",900:"#5A2C20",950:"#3C1D15"},
+        /* ── 系 4：暖駝強調色 tan ── 跟 sage 形成暖冷對比 (highlight / 未儲存提示 / 強調) */
+        tan: {50:"#FAF4EC",100:"#F2E5D2",200:"#E6CDA8",300:"#D9B582",400:"#CFA275",500:"#C49A6C",600:"#A67E54",700:"#856641",800:"#644D31",900:"#483823",950:"#2E2415"}
+      },
+      boxShadow: {
+        /* 雙光源柔光陰影 (環境暖光 + sage 主光) */
+        sm: "0px 0px 2px rgba(255,255,255,0.6), 0px 1px 4px rgba(95,107,74,0.10)",
+        DEFAULT: "0px 0px 2px rgba(255,255,255,0.6), 0px 2px 8px rgba(95,107,74,0.12)",
+        md: "0px 0px 2px rgba(255,255,255,0.6), 0px 4px 14px rgba(95,107,74,0.14)",
+        lg: "0px 2px 6px rgba(95,107,74,0.10), 0px 10px 28px rgba(95,107,74,0.16)"
+      },
+      backgroundImage: {
+        'logo-leasing': 'url("./assets/logo-leasing.png")'
+      }
+    }
+  }
+};
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:"Noto Sans TC",system-ui,sans-serif}
-select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23475569' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}
+body{margin:0;font-family:"Noto Sans TC",system-ui,sans-serif;background:#E9E7E0;color:#2C2A26}
+select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236B6A63' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}
 .tn{font-variant-numeric:tabular-nums}
 .field-sizing-content{field-sizing:content}
-.el{color:#0369a1;text-decoration:underline;font-size:10px;cursor:pointer}
+.el{color:#4D5E42;text-decoration:underline;font-size:10px;cursor:pointer}
 @media print {
   body{font-size:11px}
   .no-print{display:none !important}
@@ -39,6 +87,12 @@ const fmt = (n, d=0) => {
   if (n == null || isNaN(n)) return "—";
   return n.toLocaleString("zh-TW", {minimumFractionDigits:d, maximumFractionDigits:d});
 };
+// 自 v69: 無條件捨去到 2 位小數, 用於造價/比率類的顯示 (避免四捨五入產生誤差)
+const fmt2 = (n) => {
+  if (n == null || isNaN(n)) return "—";
+  const floored = Math.floor(Number(n) * 100) / 100;
+  return floored.toLocaleString("zh-TW", {minimumFractionDigits:2, maximumFractionDigits:2});
+};
 const pct = n => (n == null || isNaN(n)) ? "—" : (n*100).toFixed(1)+"%";
 let _uid = 100;
 const uid = () => ++_uid;
@@ -47,10 +101,8 @@ const uid = () => ++_uid;
    API 抽象層 (對接後端 OpenAPI)
    設計成「介面」: 未來後端通了, useMockData = false 即可
 ════════════════════════════════════════ */
-const API_BASE_URL_STORAGE_KEY = "land-info.api-base-url";
 const API_CONFIG = {
-  // 預設 baseURL; 啟動時會被 localStorage 覆寫 (若有設定)
-  baseURL: localStorage.getItem(API_BASE_URL_STORAGE_KEY) || "https://fe1b-211-76-155-19.ngrok-free.app",
+  baseURL: "https://fe1b-211-76-155-19.ngrok-free.app",  // 後端 URL (ngrok)
   useMockData: false,       // true = 用假資料 (本機開發); false = 呼叫真實 API
   timeout: 10000,           // 請求逾時 (ms)
   // ngrok 免費版需要此 header 跳過瀏覽器警告頁
@@ -997,11 +1049,24 @@ const DEF = {
   /* ─── 合建分回手動覆寫 (覆寫分回面積，總銷自動 = 面積 × 售價) ─── */
   shareOverride: {},               // 例: {builder: 800.5, owner_1: 350.2} 坪
   uP:52, pip:true, pP:250, depR:0.15, comR:0.85,
+  // 自 v64: 銷售拆三類 + 車位拆兩類 (住宅/店面/辦公 + 平面/機械)
+  salesMix: {
+    res:    { mode: "ratio", ratio: 1.0, area: 0, uP: 52 },
+    retail: { mode: "ratio", ratio: 0,   area: 0, uP: 0 },
+    office: { mode: "ratio", ratio: 0,   area: 0, uP: 0 },
+  },
+  parkingMix: {
+    flat:       { count: 100, uP: 250 },
+    mechanical: { count: 0,   uP: 0 },
+  },
   salesSched:[
     {id:1, year:2026, month:3,  ratio:0.15, label:"預售期"},
     {id:2, year:2027, month:1,  ratio:0.50, label:"工程期"},
     {id:3, year:2028, month:6,  ratio:0.35, label:"交屋期"}
   ],
+  // 自 v67: 交屋日 (預估完工/移轉所有權日, 與銷售收款時程獨立)
+  // 用途: 現金流重大時間點 / 經營分析「取得日」預設基準 / 房地合一稅持有期起點
+  handoverDate: { year: 2028, month: 6 },
   // ─── 綜合效益評估 ───
   compBenefit: {
     mode: "single",              // "single" 不動產處分效益 | "longHold" 長期持有
@@ -1017,6 +1082,15 @@ const DEF = {
     // 自 v56: 土地稅制 (新制房地合一 / 舊制土增稅)
     landRegime: "auto", landAcquireYearROC: 0, landAcquireMonth: 1, lvtUrbanRenewal: false,
     lvtOrigVal: 0, lvtLandType: "1", lvtTaxResult: null,
+    // 自 v66: 公保地容積移轉 (情境模擬, 預設關閉)
+    volTransfer: {
+      enabled: false,
+      includeInT8: false,
+      pricePct: 200,                                  // 容積買賣價佔公告總值 %
+      announcedValueOverride: null,                   // null=自動帶表 2, 數字=手動覆寫 (萬)
+      extraCosts: [],                                 // [{id, label, amount}]
+      extraRevenues: [],                              // [{id, label, amount}]
+    },
     // 處分價格預估參數
     buildingDepRate: 2.0,        // 建物折舊率 (% / 年)
     landAppRate: 3.0,            // 土地年漲幅 (% / 年)
@@ -1140,15 +1214,26 @@ const BLANK = {
   },
   shareOverride: {},
   uP:0, pip:true, pP:0, depR:0.15, comR:0.85,
+  salesMix: {
+    res:    { mode: "ratio", ratio: 1.0, area: 0, uP: 0 },
+    retail: { mode: "ratio", ratio: 0,   area: 0, uP: 0 },
+    office: { mode: "ratio", ratio: 0,   area: 0, uP: 0 },
+  },
+  parkingMix: {
+    flat:       { count: 0, uP: 0 },
+    mechanical: { count: 0, uP: 0 },
+  },
   salesSched:[
     {id:1, year:2026, month:3, ratio:1, label:"預售"}
   ],
+  handoverDate: { year: 0, month: 0 },  // 0 = 未填, 用銷售時程最後一期 fallback
   compBenefit: {
     mode: "single", useDiscount: false, discountRate: 0, holdYears: 10,
     landValuationMode: "appraisal", landBookValue: 0, landAcquiredValue: 0,
     taxpayerType: "", selfUse: false,
     acquireYear: 0, acquireMonth: 0,
     landRegime: "auto", landAcquireYearROC: 0, landAcquireMonth: 1, lvtUrbanRenewal: false, lvtOrigVal: 0, lvtLandType: "1", lvtTaxResult: null,
+    volTransfer: { enabled: false, includeInT8: false, pricePct: 200, announcedValueOverride: null, extraCosts: [], extraRevenues: [] },
     buildingDepRate: 2.0, landAppRate: 3.0, buildingRatio: 45,
     disposals: [{id:1, label:"完工出售", year:2028, month:6, area:0, price:0, enabled:true, useSuggested:false}],
     rent: { enabled:false, areaInput:0, areaPct:0, monthlyRent:0, startYear:2028, startMonth:7, endYear:2038, endMonth:6 },
@@ -1206,28 +1291,28 @@ function pickImportMode({title, summary, errors = []}) {
     const overlay = document.createElement("div");
     overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:99999;font-family:sans-serif;";
     const errHtml = errors.length === 0 ? "" : `
-      <div style="max-height:140px;overflow-y:auto;padding:8px 12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:11px;color:#991b1b;line-height:1.6;">
+      <div style="max-height:140px;overflow-y:auto;padding:8px 12px;background:#F8EDE9;border:1px solid #E4BCAF;border-radius:8px;font-size:11px;color:#723829;line-height:1.6;">
         <div style="font-weight:700;margin-bottom:4px;">⚠ ${errors.length} 個警告</div>
         ${errors.map(e => `<div>• ${e.replace(/</g,"&lt;")}</div>`).join("")}
       </div>`;
     overlay.innerHTML = `
       <div style="background:#fff;padding:24px;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.2);min-width:440px;max-width:90vw;display:flex;flex-direction:column;gap:14px;">
-        <div style="font-size:15px;font-weight:700;color:#111;">${title}</div>
-        <div style="font-size:13px;color:#334155;">${summary}</div>
+        <div style="font-size:15px;font-weight:700;color:#262420;">${title}</div>
+        <div style="font-size:13px;color:#54524A;">${summary}</div>
         ${errHtml}
-        <div style="font-size:12px;color:#64748b;">請選擇匯入方式：</div>
+        <div style="font-size:12px;color:#807D73;">請選擇匯入方式：</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <button id="im-replace" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:14px 16px;background:#f8fafc;border:2px solid #e2e8f0;border-radius:10px;cursor:pointer;font-family:inherit;text-align:left;transition:all 0.15s;" onmouseover="this.style.background='#fef2f2';this.style.borderColor='#dc2626';" onmouseout="this.style.background='#f8fafc';this.style.borderColor='#e2e8f0';">
-            <div style="font-size:13px;font-weight:700;color:#0f172a;">取代現有清冊</div>
-            <div style="font-size:11px;color:#64748b;">清除原有資料, 改用匯入內容</div>
+          <button id="im-replace" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:14px 16px;background:#F5F3EE;border:2px solid #E2DFD7;border-radius:10px;cursor:pointer;font-family:inherit;text-align:left;transition:all 0.15s;" onmouseover="this.style.background='#F8EDE9';this.style.borderColor='#A9543D';" onmouseout="this.style.background='#F5F3EE';this.style.borderColor='#E2DFD7';">
+            <div style="font-size:13px;font-weight:700;color:#262420;">取代現有清冊</div>
+            <div style="font-size:11px;color:#807D73;">清除原有資料, 改用匯入內容</div>
           </button>
-          <button id="im-append" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:14px 16px;background:#f8fafc;border:2px solid #e2e8f0;border-radius:10px;cursor:pointer;font-family:inherit;text-align:left;transition:all 0.15s;" onmouseover="this.style.background='#f0f9ff';this.style.borderColor='#0284c7';" onmouseout="this.style.background='#f8fafc';this.style.borderColor='#e2e8f0';">
-            <div style="font-size:13px;font-weight:700;color:#0f172a;">附加到現有清冊</div>
-            <div style="font-size:11px;color:#64748b;">保留原有資料, 加入新項目</div>
+          <button id="im-append" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:14px 16px;background:#F5F3EE;border:2px solid #E2DFD7;border-radius:10px;cursor:pointer;font-family:inherit;text-align:left;transition:all 0.15s;" onmouseover="this.style.background='#F4F6F2';this.style.borderColor='#5E7350';" onmouseout="this.style.background='#F5F3EE';this.style.borderColor='#E2DFD7';">
+            <div style="font-size:13px;font-weight:700;color:#262420;">附加到現有清冊</div>
+            <div style="font-size:11px;color:#807D73;">保留原有資料, 加入新項目</div>
           </button>
         </div>
         <div style="display:flex;justify-content:flex-end;">
-          <button id="im-cancel" style="padding:6px 14px;border:1px solid #cbd5e1;background:#fff;color:#475569;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">取消</button>
+          <button id="im-cancel" style="padding:6px 14px;border:1px solid #CCC8BD;background:#fff;color:#54524A;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">取消</button>
         </div>
       </div>`;
     document.body.appendChild(overlay);
@@ -1246,24 +1331,24 @@ function openSystemSettings() {
   const overlay = document.createElement("div");
   overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:99999;font-family:'Noto Sans TC',sans-serif;padding:20px;overflow-y:auto;";
   const apiStatus = API_CONFIG.useMockData
-    ? `<span style="display:inline-block;padding:2px 8px;background:#fef3c7;color:#92400e;border-radius:999px;font-size:11px;font-weight:700;">Mock 模式</span>`
-    : `<span style="display:inline-block;padding:2px 8px;background:#dcfce7;color:#166534;border-radius:999px;font-size:11px;font-weight:700;">Live</span>`;
+    ? `<span style="display:inline-block;padding:2px 8px;background:#F2E5D2;color:#644D31;border-radius:999px;font-size:11px;font-weight:700;">Mock 模式</span>`
+    : `<span style="display:inline-block;padding:2px 8px;background:#E7ECE2;color:#3D4B36;border-radius:999px;font-size:11px;font-weight:700;">Live</span>`;
   overlay.innerHTML = `
     <div style="background:#fff;padding:24px;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.2);width:520px;max-width:100%;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;gap:18px;">
       <div style="display:flex;align-items:center;justify-content:space-between;">
-        <div style="font-size:16px;font-weight:700;color:#0f172a;">⚙️ 系統資料維護</div>
-        <button id="ss-close-x" style="background:none;border:0;font-size:18px;color:#64748b;cursor:pointer;line-height:1;">×</button>
+        <div style="font-size:16px;font-weight:700;color:#262420;">⚙️ 系統資料維護</div>
+        <button id="ss-close-x" style="background:none;border:0;font-size:18px;color:#807D73;cursor:pointer;line-height:1;">×</button>
       </div>
-      <div style="font-size:11px;color:#64748b;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;">
+      <div style="font-size:11px;color:#807D73;background:#F5F3EE;border:1px solid #E2DFD7;border-radius:8px;padding:8px 12px;">
         以下資料屬於後端共用資料庫，各專案皆會使用。修改後立即生效。
       </div>
 
       <section style="display:flex;flex-direction:column;gap:8px;">
-        <div style="font-size:13px;font-weight:700;color:#0f172a;">🗺 分區基準（建蔽率 / 容積率對照表）</div>
-        <div style="font-size:11px;color:#64748b;line-height:1.5;">土地查詢前需先建立對應分區基準。CSV 欄位：縣市, 行政區, 都市計畫地區, 使用分區, 建蔽率, 容積率。</div>
+        <div style="font-size:13px;font-weight:700;color:#262420;">🗺 分區基準（建蔽率 / 容積率對照表）</div>
+        <div style="font-size:11px;color:#807D73;line-height:1.5;">土地查詢前需先建立對應分區基準。CSV 欄位：縣市, 行政區, 都市計畫地區, 使用分區, 建蔽率, 容積率。</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <button id="ss-zoning-manual" style="padding:8px 12px;background:#0284c7;color:#fff;border:0;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">✏️ 手動輸入單筆</button>
-          <label style="padding:8px 12px;background:#fff;color:#0369a1;border:2px solid #7dd3fc;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;text-align:center;font-family:inherit;">
+          <button id="ss-zoning-manual" style="padding:8px 12px;background:#5E7350;color:#fff;border:0;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">✏️ 手動輸入單筆</button>
+          <label style="padding:8px 12px;background:#fff;color:#4D5E42;border:2px solid #B0C0A4;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;text-align:center;font-family:inherit;">
             📤 上傳 CSV
             <input id="ss-zoning-csv" type="file" accept=".csv" style="display:none;"/>
           </label>
@@ -1271,32 +1356,26 @@ function openSystemSettings() {
       </section>
 
       <section style="display:flex;flex-direction:column;gap:8px;">
-        <div style="font-size:13px;font-weight:700;color:#0f172a;">📊 物價指數（土地增值稅試算）</div>
-        <div style="font-size:11px;color:#64748b;line-height:1.5;">各民國年度的物價指數。土增稅查詢前需先上傳。檔案格式：.xls / .xlsx。</div>
-        <label style="padding:8px 12px;background:#fff;color:#0369a1;border:2px solid #7dd3fc;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;text-align:center;font-family:inherit;">
+        <div style="font-size:13px;font-weight:700;color:#262420;">📊 物價指數（土地增值稅試算）</div>
+        <div style="font-size:11px;color:#807D73;line-height:1.5;">各民國年度的物價指數。土增稅查詢前需先上傳。檔案格式：.xls / .xlsx。</div>
+        <label style="padding:8px 12px;background:#fff;color:#4D5E42;border:2px solid #B0C0A4;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;text-align:center;font-family:inherit;">
           📤 上傳物價指數 xls
           <input id="ss-pi-xls" type="file" accept=".xls,.xlsx" style="display:none;"/>
         </label>
       </section>
 
       <section style="display:flex;flex-direction:column;gap:8px;">
-        <div style="font-size:13px;font-weight:700;color:#0f172a;">🔌 後端 API 模式</div>
-        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#475569;">
+        <div style="font-size:13px;font-weight:700;color:#262420;">🔌 後端 API 模式</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#54524A;">
           目前狀態 ${apiStatus}
         </div>
-        <label style="font-size:11px;color:#64748b;display:flex;flex-direction:column;gap:4px;">
-          後端 baseURL (儲存後立即生效, 存放於瀏覽器 localStorage)
-          <div style="display:flex;gap:6px;">
-            <input id="ss-base-url" type="text" value="${API_CONFIG.baseURL.replace(/"/g,"&quot;")}" placeholder="https://your-backend.example.com"
-              style="flex:1;padding:6px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;font-family:'JetBrains Mono',ui-monospace,monospace;"/>
-            <button id="ss-base-url-save" style="padding:6px 14px;background:#0284c7;color:#fff;border:0;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">儲存</button>
-            <button id="ss-base-url-reset" title="清除設定, 還原為預設值" style="padding:6px 10px;border:1px solid #cbd5e1;background:#fff;color:#475569;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">還原</button>
-          </div>
-        </label>
+        <div style="font-size:11px;color:#807D73;background:#F5F3EE;border:1px solid #E2DFD7;border-radius:6px;padding:6px 10px;font-family:'JetBrains Mono',ui-monospace,monospace;word-break:break-all;">
+          ${API_CONFIG.useMockData ? "所有 API 呼叫回傳模擬數據" : API_CONFIG.baseURL}
+        </div>
       </section>
 
       <div style="display:flex;justify-content:flex-end;">
-        <button id="ss-close" style="padding:6px 16px;border:1px solid #cbd5e1;background:#fff;color:#475569;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">關閉</button>
+        <button id="ss-close" style="padding:6px 16px;border:1px solid #CCC8BD;background:#fff;color:#54524A;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">關閉</button>
       </div>
     </div>`;
   document.body.appendChild(overlay);
@@ -1304,21 +1383,6 @@ function openSystemSettings() {
   overlay.querySelector("#ss-close").onclick = cleanup;
   overlay.querySelector("#ss-close-x").onclick = cleanup;
   overlay.onclick = (e) => { if (e.target === overlay) cleanup(); };
-
-  // 儲存 / 還原 baseURL
-  overlay.querySelector("#ss-base-url-save").onclick = () => {
-    const v = overlay.querySelector("#ss-base-url").value.trim().replace(/\/+$/, "");
-    if (!v) { alert("baseURL 不可為空"); return; }
-    if (!/^https?:\/\//i.test(v)) { alert("baseURL 必須以 http:// 或 https:// 開頭"); return; }
-    localStorage.setItem(API_BASE_URL_STORAGE_KEY, v);
-    API_CONFIG.baseURL = v;
-    alert("✓ 已儲存 baseURL:\n" + v);
-  };
-  overlay.querySelector("#ss-base-url-reset").onclick = () => {
-    if (!window.confirm("還原為程式碼預設的 baseURL? (將清除 localStorage 的設定, 重新整理頁面後生效)")) return;
-    localStorage.removeItem(API_BASE_URL_STORAGE_KEY);
-    alert("已清除, 請重新整理頁面");
-  };
 
   // 手動輸入分區基準
   overlay.querySelector("#ss-zoning-manual").onclick = async () => {
@@ -1652,6 +1716,75 @@ function calcAreas(p) {
 /* ════════════════════════════════════════
    DERIVED + SCENARIO CALCULATIONS
 ════════════════════════════════════════ */
+/* ════════════════════════════════════════
+   calcSalesMix (v64): 從 p.salesMix + 總銷面積 + p.parkingMix 算
+   - 各類面積 (依 mode: ratio 或 fixed)
+   - 各類銷售額 (面積 × 單價)
+   - 房屋總銷 / 車位總銷 / 總銷
+   - 加權平均單價 (= 房屋總銷 / 房屋面積, 給 cS 用)
+   - 含車位平均售價 / 不含車位平均售價 (顯示用)
+   - 比例 / 面積互相校閱用的衍生值
+════════════════════════════════════════ */
+function calcSalesMix(p, totalArea) {
+  const sm = p.salesMix || {};
+  const cat = (key) => {
+    const c = sm[key] || { mode: "ratio", ratio: 0, area: 0, uP: 0 };
+    const mode = c.mode || "ratio";
+    let uP = Number(c.uP) || 0;
+    // 住宅單價 fallback: 若 salesMix.res.uP 為 0, 用 p.uP (向下相容)
+    if (key === "res" && uP === 0 && Number(p.uP) > 0) uP = Number(p.uP);
+    let area = 0;
+    if (mode === "fixed") {
+      area = Number(c.area) || 0;
+    } else {  // ratio
+      area = totalArea * (Number(c.ratio) || 0);
+    }
+    // 衍生: 比例和面積互相算 (給 UI 校閱顯示用)
+    const ratioInferred = totalArea > 0 ? area / totalArea : 0;
+    return { mode, area, uP, sales: area * uP,
+             ratioVal: Number(c.ratio) || 0, fixedVal: Number(c.area) || 0,
+             ratioInferred };
+  };
+  const res    = cat("res");
+  const retail = cat("retail");
+  const office = cat("office");
+  const houseSales = res.sales + retail.sales + office.sales;
+  const houseArea  = res.area + retail.area + office.area;
+  // 加權平均房屋單價 (供 cS price 用)
+  const weightedUP = houseArea > 0 ? houseSales / houseArea : (Number(p.uP) || 0);
+  // 不含車位平均 = 房屋總銷 / 總銷面積
+  const avgExclPark = totalArea > 0 ? houseSales / totalArea : 0;
+  // 加總比例 (給校閱用) — 比例類別用 ratioVal, 固定類別用推算值
+  const sumRatio = res.ratioInferred + retail.ratioInferred + office.ratioInferred;
+  const sumArea  = houseArea;
+  const ratioClosed = Math.abs(sumRatio - 1) < 0.005;
+  const overArea = houseArea > totalArea + 1e-6;
+  const overRatio = sumRatio > 1 + 0.005;
+  // 車位
+  const pm = p.parkingMix || {};
+  const flatC = Number((pm.flat||{}).count) || 0;
+  const flatUP = Number((pm.flat||{}).uP) || 0;
+  const mechC = Number((pm.mechanical||{}).count) || 0;
+  const mechUP = Number((pm.mechanical||{}).uP) || 0;
+  const parkSales = flatC * flatUP + mechC * mechUP;
+  const parkCount = flatC + mechC;
+  // pip = true (房屋售價含車位) → 車位收入不另計
+  const parkTotalSales = p.pip ? 0 : parkSales;
+  const totalSales = houseSales + parkTotalSales;
+  // 含車位平均售價 = 總銷售金額 / 總銷面積 (車位收入分攤到房屋面積)
+  const avgInclPark = totalArea > 0 ? totalSales / totalArea : 0;
+  return {
+    res, retail, office,
+    houseArea, houseSales, weightedUP,
+    sumRatio, sumArea, ratioClosed, overArea, overRatio,
+    flat: { count: flatC, uP: flatUP, sales: flatC * flatUP },
+    mechanical: { count: mechC, uP: mechUP, sales: mechC * mechUP },
+    parkSales, parkCount, parkTotalSales,
+    houseTotalSales: houseSales, totalSales,
+    avgInclPark, avgExclPark
+  };
+}
+
 function calcDerived(p) {
   const zi = gzi(p.city, p.zone);
   const totalLandArea = p.lands.reduce((a,l) => a + l.area, 0);
@@ -1711,7 +1844,10 @@ function calcDerived(p) {
   }
 
   const builderRatio = p.jb ? Math.max(0, 1 - p.owners.reduce((a,o) => a + o.ratio, 0)) : 1;
-  const ts = p.pip ? totalArea * p.uP : totalArea * p.uP + p.parking * p.pP;
+  // 自 v64: 銷售拆三類 + 車位拆兩類 (salesMix 先算, 供 shareInfo 與 ts 用)
+  const salesMix = calcSalesMix(p, totalArea);
+  const weightedUP = salesMix.weightedUP;
+  const ts = salesMix.totalSales;
   // 自 v57: 土增稅已整合到經營分析(七)的土地稅制, 此處保留空殼供向下相容
   const lvt = {tax: 0, dt: null};
   const deedCalc = calcDeedTax(p.deedHouseVal, p.deedType);
@@ -1719,15 +1855,14 @@ function calcDerived(p) {
   /* ─── 合建分回面積/總銷 ─── */
   // 自動值 = ratio × totalArea (面積) 或 ratio × ts (總銷)
   // 若 shareOverride.builder 或 shareOverride[owner_id] 有值 → 使用覆寫
-  // 總銷自動 = 覆寫面積 × 售價 (含車位邏輯比照 ts)
+  // 總銷自動 = 覆寫面積 × 加權平均售價 + 車位收入 × ratio
   const so = p.shareOverride || {};
   const calcShare = (role, key, ratio) => {
     const autoArea_ = totalArea * ratio;
     const overArea = (so[key] !== undefined && so[key] !== null && so[key] !== "") ? Number(so[key]) : null;
     const finalArea = overArea !== null ? overArea : autoArea_;
-    // 總銷 = 面積 × 售價 (+車位收入 ratio 分配；若不含車位則 +parking*pP*ratio)
-    const sales = p.pip ? (finalArea * p.uP)
-                        : (finalArea * p.uP + p.parking * p.pP * ratio);
+    // 總銷 = 面積 × 加權平均房屋單價 + 車位總銷 × ratio
+    const sales = finalArea * weightedUP + salesMix.parkTotalSales * ratio;
     return { role, key, ratio, autoArea: autoArea_, finalArea, isOverridden: overArea !== null, sales };
   };
   const shareInfo = [];
@@ -1765,7 +1900,8 @@ function calcDerived(p) {
   return {zi, totalLandArea, landValue, landAnnouncedTotal, landMarketTotal,
           bp, baseFAR, effectiveFAR, effectiveBC, avg_far, avg_bcr,
           autoArea, totalArea, areaSrc, areaResult,
-          builderRatio, ts, lvt, deedCalc, shareInfo, childSumBP, devPeriod};
+          builderRatio, ts, lvt, deedCalc, shareInfo, childSumBP, devPeriod,
+          salesMix, weightedUP};
 }
 
 /* ════════════════════════════════════════
@@ -1845,14 +1981,36 @@ function cS(p, dr, price, cost, role, ownerRatio, taxOverride) {
   }
 
   // 收入 = 分回面積 × 售價 (+ 車位收入按比例分配)
+  // 自 v64: price = 加權平均房屋單價 (dr.weightedUP), 車位收入 = dr.salesMix.parkTotalSales (pip=true 時為 0)
   const ratio = role === "b" ? dr.builderRatio : ownerRatio;
-  const sh = p.pip ? (shareArea * price)
-                   : (shareArea * price + p.parking * p.pP * ratio);
+  const parkSales = (dr.salesMix && dr.salesMix.parkTotalSales) || 0;
+  const sh = shareArea * price + parkSales * ratio;
 
   // 建築工程造價 cf:
   //   合建案中，建商出資蓋整棟房子，承擔全案造價成本。
-  //   公式: cf = totalArea × cost  (全案總銷面積 × 各方案造價，無膨脹係數)
-  const cfFullProject = totalArea * cost;
+  //   自 v67: 依 ci.co.mode 動態計算 (fixed → value 萬, pctSales → sh × value, perPing → totalArea × value 等)
+  //          這樣下游利息、融資都會跟著正確
+  const _ci_cf = getCostItems(p);
+  const _cf_ctx = { sales: shareArea * price + parkSales * ratio, totalArea: totalArea, totalCost: 0 };
+  let cfFullProject;
+  if (_ci_cf.co && _ci_cf.co.mode) {
+    const _co_mode = _ci_cf.co.mode;
+    if (_co_mode === "fixed") {
+      cfFullProject = Number(_ci_cf.co.value) || 0;
+    } else if (_co_mode === "perPing") {
+      cfFullProject = (Number(_ci_cf.co.value) || 0) * totalArea;
+    } else if (_co_mode === "pctSales") {
+      // 用全案總銷 (dr.ts) 當基礎避免循環依賴
+      cfFullProject = (Number(_ci_cf.co.value) || 0) * dr.ts;
+    } else if (_co_mode === "pctCost") {
+      // pctCost 模式下 co 自己參考 totalCost 沒意義, fallback 用 perPing
+      cfFullProject = totalArea * cost;
+    } else {
+      cfFullProject = totalArea * cost;
+    }
+  } else {
+    cfFullProject = totalArea * cost;
+  }
 
   const bAmVal = p.bAmMode === "pct" ? sh * p.bAmR : p.bAm;
   let cs, cf;
@@ -1883,8 +2041,8 @@ function cS(p, dr, price, cost, role, ownerRatio, taxOverride) {
       it: intr,  // 利息一律自動
       lt: ltBuilder, dd: ddBuilder
     };
-    // 若 co 用 perPing 模式但模式回傳 0, fallback 用 cf
-    if (ci.co && ci.co.mode === "perPing") builderFull.co = (Number(ci.co.value) || 0) * totalArea;
+    // 自 v67: builderFull.co 與 cfFullProject 邏輯一致 (避免顯示與利息分母不同步)
+    builderFull.co = cfFullProject;
     // 自訂項目: 加入 builderFull 用 key "cu_<id>" 區分
     cci.forEach(c => {
       const v = calcCostItemValue(c, ctx);
@@ -1941,8 +2099,8 @@ function cS(p, dr, price, cost, role, ownerRatio, taxOverride) {
     const intr_full = (landValue*p.lLTV*p.lLR*p.dur/12 + cf_full*p.cLTV*p.cLR*p.dur/12) / 2;
     // 建商收入(若無扣除地主出資): 用於計算 bAm/bAd/bTx/bMg 等成本
     const builderArea_full = totalArea * dr.builderRatio;
-    const sh_b_full = p.pip ? (builderArea_full * price)
-                            : (builderArea_full * price + p.parking * p.pP * dr.builderRatio);
+    const _parkSales_b = (dr.salesMix && dr.salesMix.parkTotalSales) || 0;
+    const sh_b_full = builderArea_full * price + _parkSales_b * dr.builderRatio;
 
     // ─── 用 costItems + 自訂項目計算建商完整成本 (給地主端基準用) ───
     const ci_owner = getCostItems(p);
@@ -1957,7 +2115,8 @@ function cS(p, dr, price, cost, role, ownerRatio, taxOverride) {
       am: calcCostItemValue(ci_owner.am, ctx_owner),
       it: intr_full
     };
-    if (ci_owner.co && ci_owner.co.mode === "perPing") builderFull.co = (Number(ci_owner.co.value) || 0) * totalArea;
+    // 自 v67: builderFull.co 與 cf_full 一致
+    builderFull.co = cf_full;
     // 自訂項目加入
     cci_owner.forEach(c => {
       builderFull["cu_" + c.id] = calcCostItemValue(c, ctx_owner);
@@ -2029,17 +2188,17 @@ function calcCompBenefit(p, dr) {
     const s = dr.shareInfo && dr.shareInfo.find(x => x.role === "builder");
     myArea = s ? s.finalArea : dr.totalArea * dr.builderRatio;
     myRoleLabel = "建商" + (p.jb ? "" : " (獨資)");
-    myCs = cS(p, dr, p.uP, p.cC, "b", 0);
+    myCs = cS(p, dr, dr.weightedUP, p.cC, "b", 0);
   } else if (myRole.startsWith("owner_") && p.jb) {
     const me = p.owners.find(o => ("owner_" + o.id) === myRole);
     if (me) {
       const s = dr.shareInfo && dr.shareInfo.find(x => x.role === "owner" && Math.abs(x.ratio - me.ratio) < 1e-9);
       myArea = s ? s.finalArea : dr.totalArea * me.ratio;
       myRoleLabel = me.name;
-      myCs = cS(p, dr, p.uP, p.cC, "o", me.ratio);
+      myCs = cS(p, dr, dr.weightedUP, p.cC, "o", me.ratio);
     }
   }
-  if (!myCs) myCs = cS(p, dr, p.uP, p.cC, "b", 0);
+  if (!myCs) myCs = cS(p, dr, dr.weightedUP, p.cC, "b", 0);
 
   const mySalesAmount = myCs.sh;
   const myTotalCost   = myCs.tc;
@@ -2112,14 +2271,23 @@ function calcCompBenefit(p, dr) {
   const single_annual = single_netProfit / holdYears;
 
   // ─── 模式二：長期持有 ───
-  // (0) 取得日期 (預設取銷售時程最後一期)
+  // (0) 取得日期 (預設取交屋日 handoverDate, 若無則用銷售時程最後一期)
+  // 自 v67: 交屋日 ≠ 銷售簽約日, 交屋日才是房地合一稅持有期起點
   let acqYear = Number(cb.acquireYear) || 0;
   let acqMonth = Number(cb.acquireMonth) || 0;
   let acqAuto = !acqYear || !acqMonth;
-  if (acqAuto && p.salesSched && p.salesSched.length > 0) {
-    const last = [...p.salesSched].sort((a,b) => (b.year*12+b.month) - (a.year*12+a.month))[0];
-    acqYear = last.year;
-    acqMonth = last.month;
+  if (acqAuto) {
+    const hd = p.handoverDate || {};
+    const hdY = Number(hd.year) || 0;
+    const hdM = Number(hd.month) || 0;
+    if (hdY > 0 && hdM > 0) {
+      acqYear = hdY;
+      acqMonth = hdM;
+    } else if (p.salesSched && p.salesSched.length > 0) {
+      const last = [...p.salesSched].sort((a,b) => (b.year*12+b.month) - (a.year*12+a.month))[0];
+      acqYear = last.year;
+      acqMonth = last.month;
+    }
   }
   if (!acqYear) acqYear = 2028;
   if (!acqMonth) acqMonth = 6;
@@ -2339,6 +2507,39 @@ function calcCompBenefit(p, dr) {
     : holdYears;
   const longHold_annual = (pd_sumNetProfit / longHold_periodYears) + effect2Annual + effect3Annual;
 
+  // ─── 自 v66: 公保地容積移轉 (情境模擬) ───
+  const vt = cb.volTransfer || {};
+  const vt_enabled = !!vt.enabled;
+  const vt_includeInT8 = !!vt.includeInT8;
+  const vt_pricePct = Number(vt.pricePct) || 0;
+  // 公告總值自動帶: 我 (myRole) 的持分公告總值加總
+  // = Σ (land.m2 × land.announcedValuePerM2 × h.share) / 10000  (元 → 萬)
+  let vt_announcedAuto = 0;
+  if (myRole.startsWith("owner_")) {
+    const myId = myRole.slice(6);
+    const lands = p.lands || [];
+    const holdings = p.ownerHoldings || [];
+    vt_announcedAuto = holdings
+      .filter(h => String(h.ownerId) === myId)
+      .reduce((sum, h) => {
+        const land = lands.find(l => (l.sec||"") === (h.sec||"") && (l.num||"") === (h.num||""));
+        if (!land) return sum;
+        const m2 = Number(land.m2) || 0;
+        const av = Number(land.announcedValuePerM2) || 0;
+        const sh = Number(h.share) || 0;
+        return sum + m2 * av * sh / 10000;
+      }, 0);
+  }
+  // 若有手動覆寫值, 用覆寫值
+  const vt_announcedValue = (vt.announcedValueOverride != null && vt.announcedValueOverride !== "")
+    ? Number(vt.announcedValueOverride) || 0
+    : vt_announcedAuto;
+  const vt_isOverridden = vt.announcedValueOverride != null && vt.announcedValueOverride !== "";
+  const vt_autoRevenue = vt_announcedValue * vt_pricePct / 100;
+  const vt_totalCosts = (vt.extraCosts || []).reduce((a, c) => a + (Number(c.amount) || 0), 0);
+  const vt_totalRevenues = (vt.extraRevenues || []).reduce((a, r) => a + (Number(r.amount) || 0), 0);
+  const vt_netProfit = vt_autoRevenue + vt_totalRevenues - vt_totalCosts;
+
   // ─── 統一回傳值（依 mode 切換 totalBenefit / totalAnnual）───
   const totalBenefit = mode === "single" ? single_netProfit : longHold_total;
   const totalAnnual  = mode === "single" ? single_annual   : longHold_annual;
@@ -2395,7 +2596,22 @@ function calcCompBenefit(p, dr) {
     effect1Annual: single_annual,
     effect2NPV, effect2Annual, effect2Total,
     effect3NPV, effect3Annual, effect3Total,
-    totalBenefit, totalAnnual
+    totalBenefit, totalAnnual,
+    // 自 v66: 公保地容積移轉
+    volTransfer: {
+      enabled: vt_enabled,
+      includeInT8: vt_includeInT8,
+      pricePct: vt_pricePct,
+      announcedValue: vt_announcedValue,
+      announcedAuto: vt_announcedAuto,
+      isOverridden: vt_isOverridden,
+      autoRevenue: vt_autoRevenue,
+      extraCosts: vt.extraCosts || [],
+      extraRevenues: vt.extraRevenues || [],
+      totalCosts: vt_totalCosts,
+      totalRevenues: vt_totalRevenues,
+      netProfit: vt_netProfit
+    }
   };
 }
 
@@ -2644,6 +2860,12 @@ function calcT8Snapshot(p, dr, strategyOverride = null) {
   }
   // 依模式選 totalProfit
   totalProfit = analysisMode === "disposal" ? devOnlyProfit : fullProfit;
+  // 自 v66: 若公保地容移已啟用且勾選計入 T8, 加進 totalProfit
+  let volTransferIncluded = 0;
+  if (ce.volTransfer && ce.volTransfer.enabled && ce.volTransfer.includeInT8) {
+    volTransferIncluded = ce.volTransfer.netProfit || 0;
+    totalProfit += volTransferIncluded;
+  }
 
   const roi = (burdenCost + ll + cl) > 0 ? totalProfit / (burdenCost + ll + cl) : 0;
   const roe = eq > 0 ? totalProfit / eq : 0;
@@ -2694,7 +2916,9 @@ function calcT8Snapshot(p, dr, strategyOverride = null) {
     cashflows: cfList,
     cashflowsDetailed: cfDetailedList,
     // 現金流彈性指標
-    earlyRecovery10, cashflowDiversity
+    earlyRecovery10, cashflowDiversity,
+    // 自 v66: 容移計入金額 (0 = 未啟用或未勾選計入)
+    volTransferIncluded
   };
 }
 
@@ -2770,7 +2994,9 @@ function calcT8Sensitivity(p, dr) {
   const steps = [-range, -range/2, 0, range/2, range];  // 5 個變動點
   // 基準值: 售價、造價 (取自 costItems.co 為優先, 沒有則用 p.cC)
   const ci = getCostItems(p);
-  const basePrice = p.uP || 0;
+  // 自 v64: 敏感度只調住宅單價, 店面/辦公固定
+  //         basePrice = 住宅單價 (salesMix.res.uP 或 p.uP 後備)
+  const basePrice = Number(p.salesMix?.res?.uP) || Number(p.uP) || 0;
   // ─── 計算「co 的換算金額」(不論輸入模式為何) ───
   // 用 calcCostItemValue 取得當前 co 的實際金額
   const totalArea = dr.totalArea || 1;
@@ -2812,8 +3038,15 @@ function calcT8Sensitivity(p, dr) {
     for (const costDelta of steps) {
       // co 的調整: 不論 mode 為何, 把 value 等比例調整即可
       const newCo = {...(ci.co || {}), value: (Number(ci.co?.value) || 0) * (1 + costDelta/100)};
+      // 自 v64: 只調住宅單價 (salesMix.res.uP), 店面/辦公不動
+      const newResUP = basePrice * priceFactor;
+      const newSalesMix = {
+        ...(p.salesMix || {}),
+        res: {...(p.salesMix?.res || {}), uP: newResUP}
+      };
       const pAdj = {...p,
-        uP: basePrice * priceFactor,
+        salesMix: newSalesMix,
+        uP: newResUP,  // 同步 p.uP (供向下相容路徑用)
         cC: (p.cC || 0) * (1 + costDelta/100),
         costItems: {...ci, co: newCo},
         compBenefit: adjustCompBenefit(p.compBenefit, priceFactor)
@@ -3041,7 +3274,7 @@ const Card = ({title, accent="bg-slate-700", icon, extra, children, className=""
   </div>
 );
 // Lucide icon wrapper. 用 lucide.icons + lucide.createElement 把 SVG 塞進 span ref.
-// 使用方式: <Icon name="settings" size={18} className="text-sky-300"/>
+// 使用方式: <Icon name="settings" size={18} className="text-emerald-300"/>
 // 名稱使用 kebab-case (對應 https://lucide.dev/icons), 內部自動轉 PascalCase 查詢
 function Icon({name, size=14, strokeWidth=2, className=""}) {
   const ref = React.useRef(null);
@@ -3114,7 +3347,7 @@ const NI = ({value, onChange, className="", ...r}) => {
       onChange={handleChange}
       onFocus={() => setIsFocused(true)}
       onBlur={handleBlur}
-      className={"field-sizing-content w-full text-right px-2 py-1 border border-sky-300 rounded-lg bg-sky-50 text-sky-900 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 " + className} {...r}/>
+      className={"field-sizing-content w-full text-right px-2 py-1 border border-sky-300 rounded-lg bg-sky-50 text-emerald-900 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 " + className} {...r}/>
   );
 };
 
@@ -3167,13 +3400,13 @@ const PctInput = ({value, onChange, className="", step="0.01", min=0, max=100, .
 };
 const Chk = ({ck, onChange, l, sub, disabled=false}) => (
   <label className={"flex items-start gap-2 " + (disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer")}>
-    <input type="checkbox" checked={ck} disabled={disabled} onChange={e => onChange(e.target.checked)} className="mt-0.5 w-4 h-4 rounded border-slate-300 text-sky-600"/>
+    <input type="checkbox" checked={ck} disabled={disabled} onChange={e => onChange(e.target.checked)} className="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600"/>
     <div><span className="text-sm font-semibold text-slate-700">{l}</span>{sub && <div className="text-[10px] text-slate-400">{sub}</div>}</div>
   </label>
 );
 const SO = ({v, fn, opts, className=""}) => (
   <select value={v} onChange={e => fn(e.target.value)}
-    className={"px-2 py-1.5 border border-sky-300 rounded-lg bg-sky-50 text-sky-900 font-semibold text-sm w-full focus:outline-none focus:ring-2 focus:ring-sky-400 " + className}>
+    className={"px-2 py-1.5 border border-sky-300 rounded-lg bg-sky-50 text-emerald-900 font-semibold text-sm w-full focus:outline-none focus:ring-2 focus:ring-sky-400 " + className}>
     {opts.map(o => <option key={typeof o==="string"?o:o.v} value={typeof o==="string"?o:o.v}>{typeof o==="string"?o:o.l}</option>)}
   </select>
 );
@@ -3243,47 +3476,49 @@ function AuthScreen({onAuthed}) {
 
   const inpStyle = {
     width:"100%", padding:"12px 16px", borderRadius:12,
-    backgroundColor:"rgba(255,255,255,0.15)", border:"1px solid rgba(255,255,255,0.3)",
-    color:"#ffffff", fontSize:14, outline:"none", fontFamily:"monospace"
+    backgroundColor:"#F5F3EE", border:"1px solid #E2DFD7",
+    color:"#2C2A26", fontSize:14, outline:"none", fontFamily:"monospace"
   };
 
   return (
-    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#0f172a,#0c4a6e,#0f172a)",padding:16,fontFamily:"'Noto Sans TC',system-ui,sans-serif"}}>
+    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#ECEAE3,#E9E7E0)",padding:16,fontFamily:"'Noto Sans TC',system-ui,sans-serif"}}>
       <div style={{width:"100%",maxWidth:400}}>
         <div style={{textAlign:"center",marginBottom:24}}>
-          <div style={{width:64,height:64,borderRadius:16,background:"linear-gradient(135deg,#38bdf8,#22d3ee)",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:24,color:"#fff",margin:"0 auto 16px",boxShadow:"0 8px 32px rgba(56,189,248,0.3)"}}>智</div>
-          <h1 style={{color:"#fff",fontSize:20,fontWeight:900,margin:0}}>台灣建設開發智腦</h1>
-          <p style={{color:"rgba(125,211,252,0.5)",fontSize:10,letterSpacing:"0.3em",marginTop:4}}>TAIWAN DIGITAL CONSTRUCTION BRAIN</p>
+          <div style={{width:64,height:64,borderRadius:16,background:"url('./assets/logo-leasing.png') center/cover",margin:"0 auto 16px",boxShadow:"0 6px 20px rgba(95,107,74,0.18)"}}></div>
+          <h1 style={{color:"#2C2A26",fontSize:20,fontWeight:900,margin:0}}>台灣建設開發智腦</h1>
+          <p style={{color:"#9C998F",fontSize:10,letterSpacing:"0.3em",marginTop:4}}>TAIWAN DIGITAL CONSTRUCTION BRAIN</p>
         </div>
 
-        <div style={{background:"rgba(255,255,255,0.08)",borderRadius:16,padding:24,border:"1px solid rgba(255,255,255,0.15)"}}>
+        <div style={{background:"#FFFFFF",borderRadius:20,padding:24,border:"1px solid #E2DFD7",boxShadow:"0 4px 24px rgba(95,107,74,0.10)"}}>
           <div style={{marginBottom:16}}>
-            <label style={{color:"#bae6fd",fontSize:12,fontWeight:700,display:"block",marginBottom:4}}>USERID</label>
+            <label style={{color:"#6A685F",fontSize:12,fontWeight:700,display:"block",marginBottom:4}}>USERID</label>
             <input type="text" value={userId} autoComplete="username"
               onChange={e=>{setUserId(e.target.value); setErr("")}}
               onKeyDown={e=>{if(e.key==="Enter") submit()}}
+              onFocus={e=>{e.target.style.borderColor="#728B5F"; e.target.style.background="#FFFFFF";}}
+              onBlur={e=>{e.target.style.borderColor="#E2DFD7"; e.target.style.background="#F5F3EE";}}
               style={inpStyle} placeholder="alex_2026"/>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:6}}>
-              <span style={{color:"rgba(186,230,253,0.5)",fontSize:10}}>英數字/底線/連字號, 至少 3 字</span>
+              <span style={{color:"#9C998F",fontSize:10}}>英數字/底線/連字號, 至少 3 字</span>
               <button onClick={()=>{setUserId(genSuggested()); setErr("")}}
-                style={{background:"transparent",border:"none",color:"#7dd3fc",fontSize:10,cursor:"pointer",textDecoration:"underline"}}>
+                style={{background:"transparent",border:"none",color:"#5E7350",fontSize:10,cursor:"pointer",textDecoration:"underline"}}>
                 建議隨機
               </button>
             </div>
           </div>
-          {err && <div style={{color:"#fb7185",fontSize:12,textAlign:"center",background:"rgba(244,63,94,0.1)",borderRadius:8,padding:8,marginTop:12,marginBottom:8}}>{err}</div>}
+          {err && <div style={{color:"#8E4633",fontSize:12,textAlign:"center",background:"#F8EDE9",borderRadius:8,padding:8,marginTop:12,marginBottom:8}}>{err}</div>}
           <button onClick={submit} disabled={busy}
             style={{width:"100%",padding:12,marginTop:8,borderRadius:12,
-              background:busy?"#475569":"linear-gradient(90deg,#0ea5e9,#06b6d4)",
+              background:busy?"#9C998F":"linear-gradient(90deg,#728B5F,#5E7350)",
               color:"#fff",fontWeight:700,fontSize:14,border:"none",
               cursor:busy?"not-allowed":"pointer",
-              boxShadow:"0 4px 16px rgba(14,165,233,0.3)"}}>
+              boxShadow:"0 4px 16px rgba(95,107,74,0.22)"}}>
             {busy ? "載入中..." : "進入系統"}
           </button>
-          <div style={{textAlign:"center",fontSize:10,color:"rgba(125,211,252,0.45)",marginTop:14,lineHeight:1.6}}>
+          <div style={{textAlign:"center",fontSize:10,color:"#9C998F",marginTop:14,lineHeight:1.6}}>
             首次使用請自取一個 USERID (例如 alex_2026)。<br/>
             下次在任何裝置輸入相同 USERID 即可載入您的雲端專案。<br/>
-            <span style={{color:"#fbbf24"}} className="inline-flex items-center gap-1"><Icon name="alert-triangle" size={12}/> USERID 即等於身分, 請妥善保管, 並避免使用過短的字串。</span>
+            <span style={{color:"#856641"}} className="inline-flex items-center gap-1"><Icon name="alert-triangle" size={12}/> USERID 即等於身分, 請妥善保管, 並避免使用過短的字串。</span>
           </div>
         </div>
       </div>
@@ -3391,9 +3626,19 @@ function CostItemsEditor({p, sP, dr}) {
   const ctx = { sales, totalArea, totalCost: coVal };
 
   // 更新標準項目
+  // 自 v68: 操作 co 時自動同步 p.cC = 等效每坪造價, 並記錄當下面積 (T2/T4 用)
   const updStd = (key, k, v) => {
-    const newCI = {...ci, [key]: {...(ci[key]||{}), [k]: v}};
-    sP({...p, costItems: newCI});
+    const newItem = {...(ci[key]||{}), [k]: v};
+    const newCI = {...ci, [key]: newItem};
+    if (key === "co") {
+      // 計算等效每坪 (萬/坪): 用 calcCostItemValue 算出金額, 再除總銷面積
+      const ctxNow = { sales: dr.ts || 0, totalArea: dr.totalArea || 1, totalCost: 0 };
+      const amount = calcCostItemValue(newItem, ctxNow);
+      const newCC = (dr.totalArea > 0) ? amount / dr.totalArea : (Number(p.cC) || 0);
+      sP({...p, costItems: newCI, cC: newCC, _cCLastSyncArea: dr.totalArea || 0});
+    } else {
+      sP({...p, costItems: newCI});
+    }
   };
   // 更新自訂項目
   const updCustom = (id, k, v) => {
@@ -3444,7 +3689,7 @@ function CostItemsEditor({p, sP, dr}) {
       {/* 自訂項目 (預設摺疊) */}
       <div className="mt-2">
         <button onClick={()=>setCustomExpanded(!customExpanded)}
-          className="text-xs font-bold text-sky-700 hover:text-sky-900 flex items-center gap-1">
+          className="text-xs font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-1">
           {customExpanded ? "▼" : "▶"} 自訂額外成本項目 ({cci.length} 筆)
         </button>
         {customExpanded && (
@@ -3462,6 +3707,39 @@ function CostItemsEditor({p, sP, dr}) {
             </button>
           </div>
         )}
+      </div>
+
+      {/* 自 v68: 等效每坪造價 + 凍結面積提示 */}
+      <div className="mt-2 pt-2 border-t border-amber-200 bg-amber-50 rounded-lg p-2 text-[11px]">
+        <div className="flex items-center justify-between flex-wrap gap-1">
+          <span className="text-amber-700 font-bold">📐 等效每坪造價 (供 T2/T4 用)</span>
+          <span className="font-mono font-bold text-amber-800">{(Number(p.cC)||0).toFixed(2)} 萬/坪</span>
+        </div>
+        {(() => {
+          const lastArea = Number(p._cCLastSyncArea) || 0;
+          const nowArea = Number(dr.totalArea) || 0;
+          if (lastArea > 0 && nowArea > 0 && Math.abs(lastArea - nowArea) > 0.1) {
+            const pct = ((nowArea - lastArea) / lastArea) * 100;
+            return (
+              <div className="mt-1 text-[10px] text-rose-700">
+                ⚠ 上次同步時面積 = {fmt(lastArea)} 坪, 現面積 = {fmt(nowArea)} 坪 (差 {pct>0?"+":""}{pct.toFixed(1)}%)
+                <button onClick={() => {
+                  // 點擊重新同步
+                  const _co = ci.co;
+                  if (!_co) return;
+                  const _ctx = { sales: dr.ts || 0, totalArea: dr.totalArea || 1, totalCost: 0 };
+                  const _amount = calcCostItemValue(_co, _ctx);
+                  const _newCC = (dr.totalArea > 0) ? _amount / dr.totalArea : (Number(p.cC) || 0);
+                  sP({...p, cC: _newCC, _cCLastSyncArea: dr.totalArea || 0});
+                }} className="ml-2 px-2 py-0.5 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded border border-rose-300 font-bold">
+                  ↻ 重新同步
+                </button>
+                <div className="text-[9px] text-slate-500 mt-0.5">差異可能影響 T2 損益分析、T4 敏感度等下游</div>
+              </div>
+            );
+          }
+          return null;
+        })()}
       </div>
 
       {/* 總計 */}
@@ -3567,7 +3845,7 @@ function T1({p, sP}) {
         {/* 表格化呈現 */}
         <div className="overflow-x-auto rounded-xl border border-slate-200">
           <table className="w-full text-[11px]">
-            <thead className="bg-slate-700 text-white">
+            <thead className="bg-emerald-600 text-white">
               <tr>
                 <th className="px-1 py-1.5 text-left">縣市</th>
                 <th className="px-1 py-1.5 text-left">行政區</th>
@@ -3624,8 +3902,8 @@ function T1({p, sP}) {
                         ...l,
                         m2: r.area,
                         area: +(r.area * 0.3025).toFixed(2),
-                        bcr: r.building_coverage * 100,  // 倍數 → % (0~100)
-                        far: r.floor_area_ratio * 100,    // 倍數 → % (0~1000+)
+                        bcr: Math.round(r.building_coverage * 100),  // 倍數 → % 整數 (0~100)
+                        far: Math.round(r.floor_area_ratio * 100),    // 倍數 → % 整數 (0~1000+)
                         announcedValuePerM2: r.announced_value
                       } : l)});
                     }
@@ -3670,8 +3948,8 @@ function T1({p, sP}) {
                       {land.isNonBuildable ? (
                         <span className="text-rose-500 text-[10px] italic">不可建</span>
                       ) : (
-                        <NI value={land.far == null ? "" : land.far}
-                          onChange={v => updLand(land.id, "far", v === "" || v == null ? null : v)}
+                        <NI value={land.far == null ? "" : Math.round(land.far)}
+                          onChange={v => updLand(land.id, "far", v === "" || v == null ? null : Math.round(Number(v)))}
                           step={1} className="w-16" placeholder="繼承"/>
                       )}
                     </td>
@@ -3679,8 +3957,8 @@ function T1({p, sP}) {
                       {land.isNonBuildable ? (
                         <span className="text-rose-500 text-[10px] italic">—</span>
                       ) : (
-                        <NI value={land.bcr == null ? "" : land.bcr}
-                          onChange={v => updLand(land.id, "bcr", v === "" || v == null ? null : v)}
+                        <NI value={land.bcr == null ? "" : Math.round(land.bcr)}
+                          onChange={v => updLand(land.id, "bcr", v === "" || v == null ? null : Math.round(Number(v)))}
                           step={1} className="w-16" placeholder="繼承"/>
                       )}
                     </td>
@@ -3743,7 +4021,7 @@ function T1({p, sP}) {
               const loadingEl = document.createElement("div");
               loadingEl.id = "land-csv-loading-dialog";
               loadingEl.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:99999;font-family:sans-serif;";
-              loadingEl.innerHTML = '<div style="background:#fff;padding:24px 32px;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.2);display:flex;align-items:center;gap:16px;min-width:280px;"><div style="width:24px;height:24px;border:3px solid #d1d5db;border-top-color:#0891b2;border-radius:50%;animation:land-csv-spin 0.8s linear infinite;"></div><div style="font-size:14px;color:#111;font-weight:600;"><div>正在查詢土地相關資料請稍後...</div><div id="land-csv-progress" style="font-size:12px;color:#555;font-weight:500;margin-top:4px;">準備中...</div></div></div><style>@keyframes land-csv-spin{to{transform:rotate(360deg);}}</style>';
+              loadingEl.innerHTML = '<div style="background:#fff;padding:24px 32px;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.2);display:flex;align-items:center;gap:16px;min-width:280px;"><div style="width:24px;height:24px;border:3px solid #CCC8BD;border-top-color:#5E7350;border-radius:50%;animation:land-csv-spin 0.8s linear infinite;"></div><div style="font-size:14px;color:#262420;font-weight:600;"><div>正在查詢土地相關資料請稍後...</div><div id="land-csv-progress" style="font-size:12px;color:#807D73;font-weight:500;margin-top:4px;">準備中...</div></div></div><style>@keyframes land-csv-spin{to{transform:rotate(360deg);}}</style>';
               document.body.appendChild(loadingEl);
               const progressEl = loadingEl.querySelector("#land-csv-progress");
               try {
@@ -3779,8 +4057,8 @@ function T1({p, sP}) {
                     area: +((apiData.area || 0) * 0.3025).toFixed(2),
                     price: 0,
                     announcedValuePerM2: apiData.announced_value || 0,
-                    bcr: apiData.building_coverage != null ? apiData.building_coverage * 100 : null,
-                    far: apiData.floor_area_ratio != null ? apiData.floor_area_ratio * 100 : null,
+                    bcr: apiData.building_coverage != null ? Math.round(apiData.building_coverage * 100) : null,
+                    far: apiData.floor_area_ratio != null ? Math.round(apiData.floor_area_ratio * 100) : null,
                     isNonBuildable: false
                   });
                 }
@@ -3797,7 +4075,7 @@ function T1({p, sP}) {
               }
               e.target.value = "";
             }}/>
-            <div className="px-3 py-1.5 bg-white border-2 border-sky-300 text-sky-700 hover:bg-sky-50 text-xs font-bold rounded-lg shadow-sm transition-colors flex items-center justify-center gap-1.5">
+            <div className="px-3 py-1.5 bg-white border-2 border-sky-300 text-emerald-700 hover:bg-sky-50 text-xs font-bold rounded-lg shadow-sm transition-colors flex items-center justify-center gap-1.5">
               <Icon name="upload" size={14}/> 新增土地(多筆)
             </div>
           </label>
@@ -3828,7 +4106,7 @@ function T1({p, sP}) {
           {/* 表格化呈現 */}
           <div className="overflow-x-auto rounded-xl border border-slate-200">
             <table className="w-full text-[11px]">
-              <thead className="bg-slate-700 text-white">
+              <thead className="bg-emerald-600 text-white">
                 <tr>
                   <th className="px-1 py-1.5 text-left">所有權人</th>
                   <th className="px-1 py-1.5 text-center">地段</th>
@@ -3941,10 +4219,10 @@ function T1({p, sP}) {
                           onChange={v => updHolding("share", v / 100)}
                           step={0.1} className="w-20" />
                       </td>
-                      <td className="px-1 py-1 text-right font-mono text-slate-700">{fmt(shareM2, 2)}</td>
-                      <td className="px-1 py-1 text-right font-mono text-slate-700">{fmt(sharePing, 2)}</td>
-                      <td className="px-1 py-1 text-right font-mono font-bold text-violet-700">{fmt(shareValue, 1)}</td>
-                      <td className="px-1 py-1 text-right font-mono font-bold text-emerald-700">{fmt(farWeighted, 1)}</td>
+                      <td className="px-1 py-1 text-right font-mono text-slate-700">{fmt2(shareM2)}</td>
+                      <td className="px-1 py-1 text-right font-mono text-slate-700">{fmt2(sharePing)}</td>
+                      <td className="px-1 py-1 text-right font-mono font-bold text-violet-700">{fmt2(shareValue)}</td>
+                      <td className="px-1 py-1 text-right font-mono font-bold text-emerald-700">{fmt2(farWeighted)}</td>
                       <td className="px-1 py-1 text-right">
                         <NI value={h.lvtOrigVal || 0}
                           onChange={v => sP({...p, ownerHoldings: p.ownerHoldings.map(x => x.id===h.id ? {...x, lvtOrigVal: v} : x)})}
@@ -4053,7 +4331,7 @@ function T1({p, sP}) {
                 }
                 e.target.value = "";
               }}/>
-              <div className="px-3 py-1.5 bg-white border-2 border-sky-300 text-sky-700 hover:bg-sky-50 text-xs font-bold rounded-lg shadow-sm transition-colors flex items-center justify-center gap-1.5">
+              <div className="px-3 py-1.5 bg-white border-2 border-sky-300 text-emerald-700 hover:bg-sky-50 text-xs font-bold rounded-lg shadow-sm transition-colors flex items-center justify-center gap-1.5">
                 <Icon name="upload" size={14}/> 新增持分(多筆)
               </div>
             </label>
@@ -4162,7 +4440,7 @@ function T1({p, sP}) {
             const _ci_rc = getCostItems(p);
             const _cci_rc = getCustomCostItems(p);
             const _builderArea_rc = dr.totalArea * dr.builderRatio;
-            const _shB_rc = p.pip ? _builderArea_rc*p.uP : (_builderArea_rc*p.uP + p.parking*p.pP*dr.builderRatio);
+            const _shB_rc = _builderArea_rc * dr.weightedUP + (dr.salesMix.parkTotalSales||0) * dr.builderRatio;
             const _cf_rc = (_ci_rc.co?.mode === "perPing") ? (Number(_ci_rc.co.value)||0) * dr.totalArea : dr.totalArea * (p.cC || 0);
             const _intr_rc = (dr.landValue*p.lLTV*p.lLR*p.dur/12 + _cf_rc*p.cLTV*p.cLR*p.dur/12)/2;
             const _ctx_rc = { sales: _shB_rc, totalArea: dr.totalArea, totalCost: _cf_rc };
@@ -4177,7 +4455,7 @@ function T1({p, sP}) {
             const rcProfitRate = (p.rcProfitRate != null ? p.rcProfitRate : 0) / 100;
             const rcCommonBurdenAuto = totalDevCost * (1 + rcProfitRate);
             // 更新後總價值自動值 = 全案總銷
-            const rcTotalValueAuto = p.pip ? (dr.totalArea * p.uP) : (dr.totalArea * p.uP + p.parking * p.pP);
+            const rcTotalValueAuto = dr.ts;
             // 取手動覆寫或自動值
             const rcCommonBurden = (p.rcCommonBurden != null && p.rcCommonBurden !== "") ? Number(p.rcCommonBurden) : rcCommonBurdenAuto;
             const rcTotalValue = (p.rcTotalValue != null && p.rcTotalValue !== "") ? Number(p.rcTotalValue) : rcTotalValueAuto;
@@ -4273,7 +4551,7 @@ function T1({p, sP}) {
                         <NI value={jbLandShare * 100}
                           onChange={v => sP({...p, jbLandlordShare: v / 100})}
                           step={1} className="w-20" />
-                        <span className="text-[11px] text-emerald-600">% (建商 {((1-jbLandShare)*100).toFixed(0)}%)</span>
+                        <span className="text-[11px] text-emerald-600">% (建商 {(Math.floor((1-jbLandShare)*1000)/10).toFixed(1)}%)</span>
                       </div>
                     ) : (
                       /* 權利變換: V/C 輸入 + 算出等效合建比 */
@@ -4313,8 +4591,8 @@ function T1({p, sP}) {
                         {/* 等效合建比 (算出來) */}
                         <div className="bg-white rounded-lg px-2 py-1.5 border border-emerald-300">
                           <span className="text-[11px] text-emerald-700">等效合建比 (算出): </span>
-                          <span className="text-sm font-black text-emerald-800">地主 {(jbLandShare*100).toFixed(1)}%</span>
-                          <span className="text-[11px] text-emerald-600"> / 建商 {((1-jbLandShare)*100).toFixed(1)}%</span>
+                          <span className="text-sm font-black text-emerald-800">地主 {(Math.floor(jbLandShare*10000)/100).toFixed(2)}%</span>
+                          <span className="text-[11px] text-emerald-600"> / 建商 {(Math.floor((1-jbLandShare)*10000)/100).toFixed(2)}%</span>
                           <div className="text-[9px] text-slate-400 mt-0.5">= (V − C) ÷ V = ({fmt(rcTotalValue,0)} − {fmt(rcCommonBurden,0)}) ÷ {fmt(rcTotalValue,0)}</div>
                         </div>
                       </div>
@@ -4324,7 +4602,7 @@ function T1({p, sP}) {
                 {/* 分配概況表 */}
                 <div className="mt-3 overflow-x-auto rounded-xl border border-emerald-200">
                   <table className="w-full text-[11px]">
-                    <thead className="bg-emerald-700 text-white">
+                    <thead className="bg-emerald-600 text-white">
                       <tr>
                         <th className="px-2 py-1.5 text-left">所有權人</th>
                         <th className="px-2 py-1.5 text-right">持分坪</th>
@@ -4337,7 +4615,7 @@ function T1({p, sP}) {
                     <tbody>
                       {entries.map(e => (
                         <tr key={e.name} className={"border-b border-slate-100 " + (e.isBuilder ? "bg-sky-50/40" : "")}>
-                          <td className={"px-2 py-1.5 font-bold " + (e.isBuilder ? "text-sky-700" : "text-violet-700")}>{e.name}</td>
+                          <td className={"px-2 py-1.5 font-bold " + (e.isBuilder ? "text-emerald-700" : "text-violet-700")}>{e.name}</td>
                           <td className="px-2 py-1.5 text-right font-mono">{fmt(e.m2 * 0.3025, 2)}</td>
                           <td className="px-2 py-1.5 text-right font-mono font-bold text-emerald-700">{(e.farPct*100).toFixed(2)}%</td>
                           {p.jb && (
@@ -4383,7 +4661,7 @@ function T1({p, sP}) {
       {/* ── 二、建築規劃 (連結至獨立分頁) ── */}
       <Card title="二、建築規劃" accent="bg-sky-800" icon="construction">
         <div className="bg-sky-50 -mx-4 -mt-3 px-4 py-3 border-b border-sky-200 mb-3">
-          <div className="text-[11px] text-sky-700 leading-relaxed">
+          <div className="text-[11px] text-emerald-700 leading-relaxed">
             <Icon name="info" size={12} className="inline align-middle"/> 詳細的容積/獎勵/樓地板/車位/開挖等面積計算，請前往左側選單「<span className="font-bold inline-flex items-center gap-1"><Icon name="landmark" size={12}/>建築規劃</span>」分頁設定。
           </div>
         </div>
@@ -4441,68 +4719,243 @@ function T1({p, sP}) {
 
       {/* ── 三、銷售假設 ── */}
       <Card title="三、銷售假設" accent="bg-emerald-800" icon="wallet">
-        <div className="bg-slate-50 -mx-4 -mt-3 px-4 py-3 border-b mb-3"><Chk ck={p.pip} onChange={v=>up("pip",v)} l="房屋售價已含車位"/></div>
-        {/* 房屋售價 + 查詢實價 */}
-        <div className="flex items-center justify-between py-[7px] border-b border-slate-100">
-          <span className="text-slate-600 text-[13px]">房屋售價</span>
-          <div className="flex items-center gap-1">
-            <NI value={p.uP} onChange={v => up("uP", v)} step={1} className="w-24"/>
-            <span className="text-[11px] text-slate-400 w-14">萬/坪</span>
-            <button onClick={async () => {
-              // 1. 選地號: 優先表 1, 否則手動
-              let county, district, sectionNo, landNo;
-              const lands = p.lands || [];
-              if (lands.length > 0) {
-                const list = lands.map((l, i) => `${i+1}. ${l.sec||"(空段)"}/${l.num||"(空號)"} [${l.zone||"-"}]`).join("\n");
-                const pick = window.prompt(`選擇查詢的地號 (輸入編號 1~${lands.length}, 或輸入 0 手動輸入):\n\n${list}`, "1");
-                if (pick === null) return;
-                const idx = parseInt(pick, 10);
-                if (idx >= 1 && idx <= lands.length) {
-                  const L = lands[idx-1];
-                  county = L.city || p.city; district = L.district || p.dist;
-                  sectionNo = L.sec; landNo = L.num;
-                } else if (idx !== 0) { alert("編號超出範圍"); return; }
-              }
-              // 手動輸入 (無表1地號 或 選 0)
-              if (!sectionNo || !landNo) {
-                county = window.prompt("縣市:", county || p.city || "新北市"); if (!county) return;
-                district = window.prompt("行政區:", district || p.dist || "林口區"); if (!district) return;
-                sectionNo = window.prompt("地段號:", sectionNo || ""); if (!sectionNo) return;
-                landNo = window.prompt("地號:", landNo || ""); if (!landNo) return;
-              }
-              // 2. 總樓層 (自動帶 p.floors)
-              const tfStr = window.prompt("總樓層數 (必填, >0):", String(p.floors || 14));
-              if (tfStr === null) return;
-              const totalFloors = parseInt(tfStr, 10);
-              if (!totalFloors || totalFloors <= 0) { alert("總樓層數必須是正整數"); return; }
-              // 3. 查詢
-              const loadingEl = document.createElement("div");
-              loadingEl.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:99999;font-family:sans-serif;";
-              loadingEl.innerHTML = '<div style="background:#fff;padding:24px 32px;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.2);display:flex;align-items:center;gap:16px;min-width:240px;"><div style="width:24px;height:24px;border:3px solid #d1d5db;border-top-color:#059669;border-radius:50%;animation:house-price-spin 0.8s linear infinite;"></div><div style="font-size:14px;color:#111;font-weight:600;">正在查詢房價...</div></div><style>@keyframes house-price-spin{to{transform:rotate(360deg);}}</style>';
-              document.body.appendChild(loadingEl);
-              try {
-                const r = await apiClient.queryHousePrice({
-                  county, district, section_no: sectionNo, land_no: landNo, total_floors: totalFloors
-                });
-                const wanPerPing = r.unit_price;  // 後端回傳已是 萬/坪
-                if (window.confirm(
-                  `查詢結果 (${sectionNo}/${landNo}):\n單價: ${wanPerPing.toFixed(1)} 萬/坪\n\n是否將「房屋售價」設為 ${wanPerPing.toFixed(1)} 萬/坪?`
-                )) {
-                  up("uP", +wanPerPing.toFixed(1));
+        <div className="bg-slate-50 -mx-4 -mt-3 px-4 py-3 border-b mb-3">
+          <Chk ck={p.pip} onChange={v=>up("pip",v)} l="房屋售價已含車位 (勾選後車位收入歸 0, 但仍可記錄車位資料)"/>
+        </div>
+
+        {/* ━━ 銷售面積與單價 (住宅/店面/辦公) ━━ */}
+        <div className="mb-3">
+          <div className="text-xs font-bold text-slate-500 mb-2 inline-flex items-center gap-1.5">
+            <Icon name="home" size={12}/> 銷售面積與單價 (總銷面積 {fmt(dr.totalArea)} 坪)
+          </div>
+          <div className="bg-emerald-50 rounded-lg p-2 border border-emerald-200">
+            <div className="grid gap-1 text-[10px] font-bold text-slate-600 border-b border-emerald-200 pb-1 mb-1"
+                 style={{gridTemplateColumns:"60px 56px 70px 70px 70px 1fr"}}>
+              <div>類別</div>
+              <div>模式</div>
+              <div className="text-center">比例 %</div>
+              <div className="text-center">面積 (坪)</div>
+              <div className="text-center">單價 萬/坪</div>
+              <div className="text-right">小計 (萬)</div>
+            </div>
+            {[
+              { key: "res",    label: "住宅",   showQuery: true },
+              { key: "retail", label: "店面",   showQuery: false },
+              { key: "office", label: "辦公",   showQuery: false },
+            ].map(({key, label, showQuery}) => {
+              const c = (p.salesMix && p.salesMix[key]) || { mode: "ratio", ratio: 0, area: 0, uP: 0 };
+              const mode = c.mode || "ratio";
+              const mixCat = dr.salesMix[key];
+              const upMix = (field, val) => {
+                const newSm = {...(p.salesMix || {})};
+                newSm[key] = {...c, [field]: val};
+                // 住宅單價 → 同步 p.uP (向下相容)
+                if (key === "res" && field === "uP") {
+                  sP({...p, salesMix: newSm, uP: Number(val) || 0});
+                } else {
+                  sP({...p, salesMix: newSm});
                 }
-              } catch (err) {
-                alert("房價查詢失敗: " + err.message);
-              } finally {
-                loadingEl.remove();
-              }
-            }} className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-lg whitespace-nowrap inline-flex items-center gap-1">
-              <Icon name="search" size={12}/> 查詢實價
-            </button>
+              };
+              return (
+                <div key={key} className="grid gap-1 items-center py-1 border-b border-emerald-100 last:border-b-0 text-[11px]"
+                     style={{gridTemplateColumns:"60px 56px 70px 70px 70px 1fr"}}>
+                  <div className="text-slate-700 font-bold">{label}</div>
+                  <div>
+                    <select value={mode} onChange={e=>upMix("mode", e.target.value)}
+                      className="w-full px-1 py-0.5 text-[10px] border rounded bg-white">
+                      <option value="ratio">比例</option>
+                      <option value="fixed">固定</option>
+                    </select>
+                  </div>
+                  {/* 比例欄: ratio 模式可編輯, fixed 模式顯示推算值 (灰底) */}
+                  <div>
+                    {mode === "ratio" ? (
+                      <NI value={Math.round((Number(c.ratio)||0)*1000)/10} onChange={v=>upMix("ratio", (Number(v)||0)/100)} step={1} className="w-full text-[11px] text-center"/>
+                    ) : (
+                      <div className="px-1 py-0.5 text-[10px] text-slate-500 bg-slate-100 rounded text-center">
+                        {(mixCat.ratioInferred*100).toFixed(1)}
+                      </div>
+                    )}
+                  </div>
+                  {/* 面積欄: fixed 模式可編輯, ratio 模式顯示推算值 (灰底) */}
+                  <div>
+                    {mode === "fixed" ? (
+                      <NI value={Math.round(Number(c.area)||0)} onChange={v=>upMix("area", Number(v)||0)} step={10} className="w-full text-[11px] text-center"/>
+                    ) : (
+                      <div className="px-1 py-0.5 text-[10px] text-slate-500 bg-slate-100 rounded text-center">
+                        {fmt(mixCat.area)}
+                      </div>
+                    )}
+                  </div>
+                  {/* 單價 + (住宅) 查詢實價按鈕 */}
+                  <div className="flex items-center gap-0.5">
+                    <NI value={Number(c.uP)||0} onChange={v=>upMix("uP", Number(v)||0)} step={1} className="flex-1 text-[11px] text-center"/>
+                    {showQuery && (
+                      <button onClick={async () => {
+                        let county, district, sectionNo, landNo;
+                        const lands = p.lands || [];
+                        if (lands.length > 0) {
+                          const list = lands.map((l, i) => `${i+1}. ${l.sec||"(空段)"}/${l.num||"(空號)"} [${l.zone||"-"}]`).join("\n");
+                          const pick = window.prompt(`選擇查詢的地號 (輸入編號 1~${lands.length}, 或 0 手動輸入):\n\n${list}`, "1");
+                          if (pick === null) return;
+                          const idx = parseInt(pick, 10);
+                          if (idx >= 1 && idx <= lands.length) {
+                            const L = lands[idx-1];
+                            county = L.city || p.city; district = L.district || p.dist;
+                            sectionNo = L.sec; landNo = L.num;
+                          } else if (idx !== 0) { alert("編號超出範圍"); return; }
+                        }
+                        if (!sectionNo || !landNo) {
+                          county = window.prompt("縣市:", county || p.city || "新北市"); if (!county) return;
+                          district = window.prompt("行政區:", district || p.dist || "林口區"); if (!district) return;
+                          sectionNo = window.prompt("地段號:", sectionNo || ""); if (!sectionNo) return;
+                          landNo = window.prompt("地號:", landNo || ""); if (!landNo) return;
+                        }
+                        const tfStr = window.prompt("總樓層數 (必填, >0):", String(p.floors || 14));
+                        if (tfStr === null) return;
+                        const totalFloors = parseInt(tfStr, 10);
+                        if (!totalFloors || totalFloors <= 0) { alert("總樓層數必須是正整數"); return; }
+                        try {
+                          const r = await apiClient.queryHousePrice({
+                            county, district, section_no: sectionNo, land_no: landNo, total_floors: totalFloors
+                          });
+                          const wanPerPing = r.unit_price;
+                          if (window.confirm(
+                            `查詢結果 (${sectionNo}/${landNo}):\n單價: ${wanPerPing.toFixed(1)} 萬/坪\n\n是否將「住宅單價」設為 ${wanPerPing.toFixed(1)} 萬/坪?\n(店面、辦公售價請自行調整)`
+                          )) {
+                            upMix("uP", +wanPerPing.toFixed(1));
+                          }
+                        } catch (err) {
+                          alert("房價查詢失敗: " + err.message);
+                        }
+                      }} title="查詢實價 (住宅)" className="px-1 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-bold rounded whitespace-nowrap">🔍</button>
+                    )}
+                  </div>
+                  <div className="text-right font-mono text-emerald-700 font-bold">{fmt(mixCat.sales, 0)}</div>
+                </div>
+              );
+            })}
+            {/* 小計列 */}
+            <div className="grid gap-1 items-center py-1 mt-1 border-t-2 border-emerald-300 text-[11px] font-bold"
+                 style={{gridTemplateColumns:"60px 56px 70px 70px 70px 1fr"}}>
+              <div className="text-emerald-800">小計</div>
+              <div className="text-[10px] text-slate-400">{dr.salesMix.sumArea > 0 ? "校閱" : ""}</div>
+              <div className={"text-center text-[10px] "+(dr.salesMix.overRatio?"text-rose-600 font-bold":"text-emerald-700")}>
+                {(dr.salesMix.sumRatio*100).toFixed(1)}%
+                {dr.salesMix.overRatio && <span className="block text-[9px]">⚠超過</span>}
+              </div>
+              <div className={"text-center text-[10px] "+(dr.salesMix.overArea?"text-rose-600 font-bold":"text-emerald-700")}>
+                {fmt(dr.salesMix.sumArea)}
+                {dr.salesMix.overArea && <span className="block text-[9px]">⚠超過</span>}
+              </div>
+              <div className="text-[10px] text-emerald-700 text-center">房屋總銷</div>
+              <div className="text-right font-mono text-emerald-800">{fmt(dr.salesMix.houseSales, 0)}</div>
+            </div>
           </div>
         </div>
-        {!p.pip && <F l="車位單價" f="pP" u="萬/位"/>}
-        <div className="my-2 p-3 bg-emerald-50 rounded-xl border border-emerald-200"><div className="text-[11px] text-emerald-600">總銷金額</div><div className="text-xl font-black text-emerald-800">{fmt(dr.ts)} 萬</div></div>
+
+        {/* ━━ 停車位 (平面/機械) ━━ */}
+        <div className="mb-3">
+          <div className="text-xs font-bold text-slate-500 mb-2 inline-flex items-center gap-1.5">
+            <Icon name="car" size={12}/> 停車位
+          </div>
+          <div className="bg-sky-50 rounded-lg p-2 border border-sky-200">
+            <div className="grid gap-1 text-[10px] font-bold text-slate-600 border-b border-sky-200 pb-1 mb-1"
+                 style={{gridTemplateColumns:"100px 80px 80px 1fr"}}>
+              <div>類別</div>
+              <div className="text-center">數量 (位)</div>
+              <div className="text-center">單價 萬/位</div>
+              <div className="text-right">小計 (萬)</div>
+            </div>
+            {[
+              { key: "flat",       label: "平面式停車位" },
+              { key: "mechanical", label: "機械式停車位" },
+            ].map(({key, label}) => {
+              const c = (p.parkingMix && p.parkingMix[key]) || { count: 0, uP: 0 };
+              const mixCat = dr.salesMix[key];
+              const upPark = (field, val) => {
+                const newPm = {...(p.parkingMix || {})};
+                newPm[key] = {...c, [field]: Number(val) || 0};
+                const flatCount = (newPm.flat?.count) || 0;
+                const mechCount = (newPm.mechanical?.count) || 0;
+                // 平面單價 → 同步 p.pP; 總車位數 → 同步 p.parking (向下相容)
+                let extra = { parking: flatCount + mechCount };
+                if (key === "flat" && field === "uP") extra.pP = Number(val) || 0;
+                sP({...p, parkingMix: newPm, ...extra});
+              };
+              return (
+                <div key={key} className="grid gap-1 items-center py-1 border-b border-sky-100 last:border-b-0 text-[11px]"
+                     style={{gridTemplateColumns:"100px 80px 80px 1fr"}}>
+                  <div className="text-slate-700 font-bold">{label}</div>
+                  <div><NI value={Number(c.count)||0} onChange={v=>upPark("count", v)} step={1} className="w-full text-[11px] text-center"/></div>
+                  <div><NI value={Number(c.uP)||0} onChange={v=>upPark("uP", v)} step={10} className="w-full text-[11px] text-center"/></div>
+                  <div className="text-right font-mono text-emerald-700 font-bold">{fmt(mixCat.sales, 0)}</div>
+                </div>
+              );
+            })}
+            {/* 小計 */}
+            <div className="grid gap-1 items-center py-1 mt-1 border-t-2 border-sky-300 text-[11px] font-bold"
+                 style={{gridTemplateColumns:"100px 80px 80px 1fr"}}>
+              <div className="text-emerald-800">小計 ({dr.salesMix.parkCount} 位)</div>
+              <div/>
+              <div className="text-[10px] text-emerald-700 text-center">車位總銷</div>
+              <div className="text-right font-mono text-emerald-800">{fmt(dr.salesMix.parkSales, 0)}</div>
+            </div>
+            {p.pip && (
+              <div className="mt-1 text-[10px] text-amber-700 bg-amber-50 rounded p-1 border border-amber-200">
+                ℹ️ 已勾選「房屋售價已含車位」, 車位收入不另計入總銷 (但仍可記錄)。
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ━━ 總銷售金額 + 含/不含車位均價 ━━ */}
+        <div className="my-2 p-3 bg-emerald-50 rounded-xl border-2 border-emerald-300">
+          <div className="grid grid-cols-3 gap-2 text-[10px] mb-2">
+            <div className="bg-white/60 rounded p-1.5 border border-emerald-200">
+              <div className="text-emerald-600">房屋總銷</div>
+              <div className="font-mono font-bold text-emerald-800 text-sm">{fmt(dr.salesMix.houseSales, 0)} 萬</div>
+            </div>
+            <div className="bg-white/60 rounded p-1.5 border border-sky-200">
+              <div className="text-emerald-600">車位總銷{p.pip && <span className="text-[9px] text-amber-600 ml-1">(已含)</span>}</div>
+              <div className="font-mono font-bold text-emerald-800 text-sm">{fmt(p.pip ? dr.salesMix.parkSales : dr.salesMix.parkTotalSales, 0)} 萬</div>
+            </div>
+            <div className="bg-white/60 rounded p-1.5 border border-amber-200">
+              <div className="text-amber-600">總銷面積 / 房屋面積</div>
+              <div className="font-mono font-bold text-amber-800 text-sm">{fmt(dr.totalArea)} / {fmt(dr.salesMix.houseArea)} 坪</div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2 mb-2 text-[10px]">
+            <div className="bg-white rounded p-1.5 border border-emerald-300">
+              <div className="text-emerald-600">不含車位平均售價</div>
+              <div className="font-mono font-bold text-emerald-800">{fmt(dr.salesMix.avgExclPark, 1)} 萬/坪</div>
+              <div className="text-[9px] text-slate-400">= 房屋總銷 ÷ 總銷面積</div>
+            </div>
+            <div className="bg-white rounded p-1.5 border border-amber-300">
+              <div className="text-amber-600">含車位平均售價</div>
+              <div className="font-mono font-bold text-amber-800">{fmt(dr.salesMix.avgInclPark, 1)} 萬/坪</div>
+              <div className="text-[9px] text-slate-400">= 總銷售金額 ÷ 總銷面積</div>
+            </div>
+          </div>
+          <div className="border-t border-emerald-300 pt-2">
+            <div className="text-[11px] text-emerald-600">總銷售金額</div>
+            <div className="text-2xl font-black text-emerald-800">{fmt(dr.ts)} 萬</div>
+          </div>
+        </div>
         <div className="mt-3 border-t pt-3">
+          {/* 自 v67: 交屋日 (與銷售收款時程獨立) */}
+          <div className="mb-3 bg-amber-50 rounded-lg p-2 border border-amber-200">
+            <div className="text-xs font-bold text-amber-800 mb-1.5 inline-flex items-center gap-1.5"><Icon name="key" size={12}/> 預定交屋日 (完工/移轉所有權)</div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <SO v={(p.handoverDate?.year)||0} fn={v=>sP({...p, handoverDate: {...(p.handoverDate||{}), year:+v}})} opts={[{v:0,l:"未設定"},...YRS]} className="w-20 text-[10px]"/>
+              <SO v={(p.handoverDate?.month)||0} fn={v=>sP({...p, handoverDate: {...(p.handoverDate||{}), month:+v}})} opts={[{v:0,l:"未設定"},...MOS]} className="w-16 text-[10px]"/>
+              {(!p.handoverDate?.year || !p.handoverDate?.month) ? (
+                <span className="text-[10px] text-slate-500 italic">未設定 → 用銷售時程最後一期當交屋日</span>
+              ) : (
+                <span className="text-[10px] text-amber-700">用於現金流重大時間點 / 經營分析「取得日」預設</span>
+              )}
+            </div>
+          </div>
           <div className="text-xs font-bold text-slate-500 mb-2 inline-flex items-center gap-1.5"><Icon name="calendar" size={12}/> 預定銷售時程 (年＋月＋比例)</div>
           {p.salesSched.map(s=>(
             <div key={s.id} className="flex items-center gap-1 mb-1.5 bg-slate-50 rounded-lg p-2 border">
@@ -4584,8 +5037,8 @@ function T1({p, sP}) {
         <div className="text-xs text-slate-500 mb-3">各費用依專案階段分配比例 (可手動調整%)</div>
         <div className="overflow-x-auto rounded-xl border">
           <table className="w-full text-[11px]" style={{minWidth:700}}>
-            <thead><tr className="bg-slate-700 text-white">
-              <th className="py-2 px-2 text-left font-bold sticky left-0 bg-slate-700 z-10" style={{minWidth:130}}>費用項目</th>
+            <thead><tr className="bg-emerald-600 text-white">
+              <th className="py-2 px-2 text-left font-bold sticky left-0 bg-emerald-600 z-10" style={{minWidth:130}}>費用項目</th>
               {p.expPeriods.map((ep,i)=>(
                 <th key={i} className="py-2 px-1 text-center" style={{minWidth:85}}>
                   <div className="font-bold text-[10px]">{ep.year}.{ep.month}</div>
@@ -4628,8 +5081,8 @@ function T1({p, sP}) {
                 };
                 return (
                   <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50 bg-sky-50/30">
-                    <td className="py-1.5 px-2 font-bold text-sky-700 sticky left-0 bg-sky-50/30 z-10">
-                      <span className="text-[8px] bg-sky-200 text-sky-800 px-1 rounded mr-1">自訂</span>
+                    <td className="py-1.5 px-2 font-bold text-emerald-700 sticky left-0 bg-sky-50/30 z-10">
+                      <span className="text-[8px] bg-sky-200 text-emerald-800 px-1 rounded mr-1">自訂</span>
                       {c.label || "自訂"}
                     </td>
                     {p.expPeriods.map((_,i)=>(
@@ -4692,7 +5145,7 @@ function T1({p, sP}) {
                     : "bg-white border-slate-200 text-slate-700 hover:border-sky-400"
                 )+(!p.jb?" opacity-50 cursor-not-allowed":"")}>
                 <div className="text-xs font-bold inline-flex items-center gap-1"><Icon name="home" size={12}/> 地主</div>
-                <div className={"text-[9px] mt-0.5 "+((p.myRole||"").startsWith("owner_")?"text-sky-100":"text-slate-500")}>
+                <div className={"text-[9px] mt-0.5 "+((p.myRole||"").startsWith("owner_")?"text-emerald-100":"text-slate-500")}>
                   {!p.jb ? "需先勾選合建案" : "提供土地，可純參與或出資參與"}
                 </div>
               </button>
@@ -4777,13 +5230,13 @@ function T1({p, sP}) {
                 <div key={o.id} className="bg-sky-50 rounded-lg p-3 border border-sky-200">
                   <div className="flex items-center gap-2 mb-2">
                     <select value={o.id} disabled
-                      className="font-semibold text-sm text-sky-800 bg-white border border-sky-200 rounded px-1 py-0.5 w-28 cursor-not-allowed opacity-90"
+                      className="font-semibold text-sm text-emerald-800 bg-white border border-sky-200 rounded px-1 py-0.5 w-28 cursor-not-allowed opacity-90"
                       title="所有權人名稱於「一、土地資料 表 2」管理">
                       {p.owners.map(ow => <option key={ow.id} value={ow.id}>{ow.name}</option>)}
                     </select>
                     <span className="text-xs text-slate-500">比例</span>
                     <NI value={o.ratio} onChange={v=>updOwner(o.id,"ratio",v)} step={0.05} className="w-20"/>
-                    <span className="text-sm font-bold text-sky-700">{(o.ratio*100).toFixed(1)}%</span>
+                    <span className="text-sm font-bold text-emerald-700">{(o.ratio*100).toFixed(1)}%</span>
                     <div className="flex-1"/>
                   </div>
 
@@ -4795,7 +5248,7 @@ function T1({p, sP}) {
                     return (
                       <div className="mb-2 p-2 bg-white/70 rounded-lg border border-sky-200">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-[10px] font-bold text-sky-700">費率啟用 (地主端){allOff && <span className="ml-1 text-[9px] bg-amber-200 text-amber-800 px-1 rounded">全部關閉</span>}</span>
+                          <span className="text-[10px] font-bold text-emerald-700">費率啟用 (地主端){allOff && <span className="ml-1 text-[9px] bg-amber-200 text-amber-800 px-1 rounded">全部關閉</span>}</span>
                           <span className="text-[9px] text-slate-400">持有/出租/營業可關閉</span>
                         </div>
                         <div className="grid grid-cols-3 gap-1 text-[10px]">
@@ -4819,20 +5272,20 @@ function T1({p, sP}) {
 
                   <div className="grid grid-cols-2 gap-2 text-[11px]">
                     <div>
-                      <div className="text-sky-600 flex items-center justify-between">
+                      <div className="text-emerald-600 flex items-center justify-between">
                         <span>分回面積{isOver && <span className="ml-1 text-[9px] bg-rose-200 text-rose-800 px-1 rounded">手動覆寫</span>}</span>
                         {isOver
                           ? <button onClick={() => { const ns={...so}; delete ns[key]; sP({...p, shareOverride: ns}); }} className="text-rose-500 hover:text-rose-700 text-xs" title="回復自動計算">↻</button>
-                          : <button onClick={() => sP({...p, shareOverride: {...so, [key]: +(si?.autoArea||0).toFixed(2)}})} className="text-sky-500 hover:text-sky-700" title="改為手動覆寫"><Icon name="pencil" size={12}/></button>}
+                          : <button onClick={() => sP({...p, shareOverride: {...so, [key]: +(si?.autoArea||0).toFixed(2)}})} className="text-emerald-500 hover:text-emerald-700" title="改為手動覆寫"><Icon name="pencil" size={12}/></button>}
                       </div>
                       {isOver
                         ? <NI value={so[key]} onChange={v => sP({...p, shareOverride: {...so, [key]: v}})} step={0.01} className="w-full mt-0.5 text-sm"/>
-                        : <div className="font-bold text-sky-900 mt-0.5 px-2 py-1 bg-white rounded font-mono">{fmt(si?.finalArea||0, 2)} 坪</div>}
+                        : <div className="font-bold text-emerald-900 mt-0.5 px-2 py-1 bg-white rounded font-mono">{fmt(si?.finalArea||0, 2)} 坪</div>}
                       <div className="text-[9px] text-slate-400 mt-0.5">自動值: {fmt(si?.autoArea||0, 2)} 坪</div>
                     </div>
                     <div>
-                      <div className="text-sky-600">總銷 (= 面積 × {p.uP} 萬)</div>
-                      <div className="font-bold text-sky-900 mt-0.5 px-2 py-1 bg-white rounded font-mono">{fmt(si?.sales||0)} 萬</div>
+                      <div className="text-emerald-600">總銷 (= 面積 × {p.uP} 萬)</div>
+                      <div className="font-bold text-emerald-900 mt-0.5 px-2 py-1 bg-white rounded font-mono">{fmt(si?.sales||0)} 萬</div>
                     </div>
                   </div>
 
@@ -4845,7 +5298,7 @@ function T1({p, sP}) {
                     const _ci = getCostItems(p);
                     const _cci = getCustomCostItems(p);
                     const _builderArea = dr.totalArea * dr.builderRatio;
-                    const _shB = p.pip ? _builderArea*p.uP : (_builderArea*p.uP + p.parking*p.pP*dr.builderRatio);
+                    const _shB = _builderArea * dr.weightedUP + (dr.salesMix.parkTotalSales||0) * dr.builderRatio;
                     const _cf = (_ci.co?.mode === "perPing") ? (Number(_ci.co.value)||0) * dr.totalArea : dr.totalArea * (p.cC || 0);
                     const _intr = (dr.landValue*p.lLTV*p.lLR*p.dur/12 + _cf*p.cLTV*p.cLR*p.dur/12)/2;
                     const _ctx = { sales: _shB, totalArea: dr.totalArea, totalCost: _cf };
@@ -4869,8 +5322,8 @@ function T1({p, sP}) {
                       {k:"de", l:STD_COST_LABELS.de, color:"text-violet-700"},
                       {k:"ad", l:STD_COST_LABELS.ad, color:"text-amber-700"},
                       {k:"tx", l:STD_COST_LABELS.tx, color:"text-amber-700"},
-                      {k:"mg", l:STD_COST_LABELS.mg, color:"text-sky-700"},
-                      {k:"am", l:STD_COST_LABELS.am, color:"text-sky-700"},
+                      {k:"mg", l:STD_COST_LABELS.mg, color:"text-emerald-700"},
+                      {k:"am", l:STD_COST_LABELS.am, color:"text-emerald-700"},
                       {k:"it", l:STD_COST_LABELS.it, color:"text-slate-700"},
                       ..._cci.map(c => ({k:"cu_"+c.id, l:c.label||"自訂", color:"text-emerald-700", isCustom:true}))
                     ];
@@ -4878,9 +5331,9 @@ function T1({p, sP}) {
                     return (
                       <div className="mt-2 border-t border-sky-200 pt-2">
                         <button onClick={() => updOwner(o.id, "_expandCost", !expanded)}
-                          className="w-full flex items-center justify-between text-[11px] font-bold text-sky-700 hover:text-sky-900">
+                          className="w-full flex items-center justify-between text-[11px] font-bold text-emerald-700 hover:text-emerald-900">
                           <span className="inline-flex items-center gap-1.5"><Icon name="wallet" size={12}/> 出資承擔成本{hasAny && <span className="ml-2 text-[9px] bg-amber-200 text-amber-800 px-1 py-0.5 rounded">B 模式</span>}</span>
-                          <span className="text-sky-500">{expanded ? "▾ 收合" : "▸ 展開"}</span>
+                          <span className="text-emerald-500">{expanded ? "▾ 收合" : "▸ 展開"}</span>
                         </button>
                         {expanded && (
                           <div className="mt-2 space-y-1.5 bg-white rounded-lg p-2 border border-sky-100">
@@ -4933,7 +5386,7 @@ function T1({p, sP}) {
                                 return (
                                   <>
                                     <div className="flex items-center justify-between mb-2">
-                                      <div className="text-[11px] font-bold text-sky-700 flex items-center gap-1">
+                                      <div className="text-[11px] font-bold text-emerald-700 flex items-center gap-1">
                                         <Icon name="building" size={12}/> 地主融資 (向銀行借款承擔出資)
                                       </div>
                                       <label className="flex items-center gap-1 text-[10px] cursor-pointer">
@@ -5054,7 +5507,7 @@ function BonusPctSelect({val, onChange, max}) {
   return (
     <div className="flex items-center gap-1">
       <select value={selectVal} onChange={handleSelect}
-        className="px-1.5 py-0.5 text-[11px] border border-sky-300 rounded bg-sky-50 text-sky-900 font-semibold focus:outline-none focus:ring-1 focus:ring-sky-400">
+        className="px-1.5 py-0.5 text-[11px] border border-sky-300 rounded bg-sky-50 text-emerald-900 font-semibold focus:outline-none focus:ring-1 focus:ring-sky-400">
         {BONUS_PCT_OPTS.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
       </select>
       {showCustom && <NI value={val} onChange={onChange} max={max||100} step={1} className="w-14 text-center"/>}
@@ -5105,7 +5558,7 @@ function T6({p, sP}) {
     const overridden = k && isOver(k);
     const accentCls =
       accent==="gold" ? "bg-amber-50 border-amber-300" :
-      accent==="result" ? "bg-slate-700 border-slate-700 text-white" :
+      accent==="result" ? "bg-emerald-600 border-emerald-600 text-white" :
       "bg-slate-50 border-slate-200";
     const labelCls = accent==="result"?"text-amber-200":"text-slate-700";
     const formulaCls = accent==="result"?"text-slate-300":"text-slate-400";
@@ -5626,6 +6079,41 @@ function T7({p, sP}) {
   const isOwner = (ce.myRole || "").startsWith("owner_");
   const isSingle = mode === "single";
 
+  // 自 v66: viewTab 控制 UI 顯示哪個區塊 (處分/長持/容移)
+  //         "single" / "longHold" 會同步 cb.mode; "vol" 不動 cb.mode
+  const [viewTab, setViewTab] = useState(() => (cb.volTransfer?.enabled ? "vol" : mode));
+  const isVolTab = viewTab === "vol";
+  const setView = (v) => {
+    setViewTab(v);
+    if (v === "single" || v === "longHold") upCB("mode", v);
+  };
+  // volTransfer 操作 helpers
+  const upVT = (k, v) => sP({...p, compBenefit: {...cb, volTransfer: {...(cb.volTransfer||{}), [k]: v}}});
+  const addVTCost = () => {
+    const list = (cb.volTransfer?.extraCosts || []);
+    const maxId = list.reduce((a,c) => Math.max(a, c.id||0), 0);
+    upVT("extraCosts", [...list, {id: maxId+1, label: "", amount: 0}]);
+  };
+  const updVTCost = (id, k, v) => {
+    const list = (cb.volTransfer?.extraCosts || []).map(c => c.id === id ? {...c, [k]: v} : c);
+    upVT("extraCosts", list);
+  };
+  const delVTCost = (id) => {
+    upVT("extraCosts", (cb.volTransfer?.extraCosts || []).filter(c => c.id !== id));
+  };
+  const addVTRev = () => {
+    const list = (cb.volTransfer?.extraRevenues || []);
+    const maxId = list.reduce((a,c) => Math.max(a, c.id||0), 0);
+    upVT("extraRevenues", [...list, {id: maxId+1, label: "", amount: 0}]);
+  };
+  const updVTRev = (id, k, v) => {
+    const list = (cb.volTransfer?.extraRevenues || []).map(c => c.id === id ? {...c, [k]: v} : c);
+    upVT("extraRevenues", list);
+  };
+  const delVTRev = (id) => {
+    upVT("extraRevenues", (cb.volTransfer?.extraRevenues || []).filter(c => c.id !== id));
+  };
+
   // 房地合一稅試算區塊 (共用元件)
   const TaxBlock = ({holdY, taxableBase, taxInfo, prefix="", multiMode=false}) => {
     const regime = ce.landRegime;  // 已由 calcCompBenefit 解析 (auto→new/old)
@@ -5863,24 +6351,33 @@ function T7({p, sP}) {
 
       {/* Tab 切換 */}
       <div className="bg-white rounded-2xl border shadow-sm p-3">
-        <div className="grid grid-cols-2 gap-2">
-          <button onClick={()=>upCB("mode","single")}
+        <div className="grid grid-cols-3 gap-2">
+          <button onClick={()=>setView("single")}
             className={"p-3 rounded-xl border-2 transition text-left "+(
-              isSingle
+              viewTab==="single"
                 ? "bg-emerald-500 border-emerald-600 text-white shadow-md"
                 : "bg-white border-slate-200 text-slate-700 hover:border-emerald-400"
             )}>
             <div className="text-sm font-bold inline-flex items-center gap-1.5"><Icon name="tag" size={13}/> 不動產處分效益</div>
-            <div className={"text-[10px] mt-0.5 "+(isSingle?"text-emerald-100":"text-slate-500")}>全分回處分變現，計算房地合一稅後淨利</div>
+            <div className={"text-[10px] mt-0.5 "+(viewTab==="single"?"text-emerald-100":"text-slate-500")}>全分回處分變現，計算房地合一稅後淨利</div>
           </button>
-          <button onClick={()=>upCB("mode","longHold")}
+          <button onClick={()=>setView("longHold")}
             className={"p-3 rounded-xl border-2 transition text-left "+(
-              !isSingle
+              viewTab==="longHold"
                 ? "bg-violet-500 border-violet-600 text-white shadow-md"
                 : "bg-white border-slate-200 text-slate-700 hover:border-violet-400"
             )}>
             <div className="text-sm font-bold inline-flex items-center gap-1.5"><Icon name="landmark" size={13}/> 長期持有不動產效益</div>
-            <div className={"text-[10px] mt-0.5 "+(!isSingle?"text-violet-100":"text-slate-500")}>部分處分 + 租金 + 營業組合效益</div>
+            <div className={"text-[10px] mt-0.5 "+(viewTab==="longHold"?"text-violet-100":"text-slate-500")}>部分處分 + 租金 + 營業組合效益</div>
+          </button>
+          <button onClick={()=>setView("vol")}
+            className={"p-3 rounded-xl border-2 transition text-left "+(
+              isVolTab
+                ? "bg-sky-500 border-sky-600 text-white shadow-md"
+                : "bg-white border-slate-200 text-slate-700 hover:border-sky-400"
+            )}>
+            <div className="text-sm font-bold inline-flex items-center gap-1.5"><Icon name="scroll" size={13}/> 公保地容積移轉</div>
+            <div className={"text-[10px] mt-0.5 "+(isVolTab?"text-emerald-100":"text-slate-500")}>情境模擬 (附加, 可選是否計入)</div>
           </button>
         </div>
       </div>
@@ -5949,8 +6446,161 @@ function T7({p, sP}) {
         </div>
       </div>
 
+      {/* ─── 選單三：公保地容積移轉 (情境模擬, 自 v66) ─── */}
+      {isVolTab && (() => {
+        const vt = ce.volTransfer || {};
+        const vtCfg = cb.volTransfer || {};
+        return (
+          <div className="space-y-4">
+            {/* 啟用開關 */}
+            <div className="bg-gradient-to-r from-sky-50 to-cyan-50 rounded-2xl border-2 border-sky-300 p-4">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={vt.enabled} onChange={e=>upVT("enabled", e.target.checked)} className="w-5 h-5"/>
+                <div>
+                  <div className="text-sm font-bold text-emerald-900 inline-flex items-center gap-1.5"><Icon name="scroll" size={13}/> 啟用此情境模擬</div>
+                  <div className="text-[10px] text-emerald-700">啟用後可選擇是否將淨收益計入「投資綜合報告 (T8)」</div>
+                </div>
+              </label>
+              {vt.enabled && (
+                <label className="flex items-center gap-2 cursor-pointer mt-3 pt-3 border-t border-sky-200">
+                  <input type="checkbox" checked={vt.includeInT8} onChange={e=>upVT("includeInT8", e.target.checked)} className="w-4 h-4"/>
+                  <span className="text-xs font-bold text-emerald-800">計入投資綜合報告 (T8)</span>
+                  <span className="text-[10px] text-slate-500">勾選後容移淨收益會加入「總淨利 / ROI / ROE」</span>
+                </label>
+              )}
+            </div>
+
+            {!vt.enabled && (
+              <div className="bg-amber-50 rounded-xl p-4 border border-amber-200 text-xs text-amber-800">
+                <Icon name="info" size={13} className="inline mr-1"/> 請先啟用上方開關以進行公保地容積移轉情境模擬。
+              </div>
+            )}
+
+            {vt.enabled && (<>
+              {/* 收益基礎 */}
+              <div className="bg-white rounded-2xl border shadow-sm p-4">
+                <div className="text-sm font-bold text-emerald-800 mb-3 inline-flex items-center gap-1.5"><Icon name="dollar-sign" size={13}/> 收益基礎</div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="text-[11px] text-slate-600">分析地主公告總值
+                      {vt.isOverridden
+                        ? <span className="ml-1 text-[10px] text-violet-600 font-bold">(手動覆寫)</span>
+                        : <span className="ml-1 text-[10px] text-slate-400">(自動帶, 來自表 2 我的持分)</span>}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {vt.isOverridden ? (
+                        <NI value={Number(vtCfg.announcedValueOverride)||0} onChange={v=>upVT("announcedValueOverride", v)} step={100} className="w-28 text-right"/>
+                      ) : (
+                        <div className="px-2 py-1 bg-slate-50 rounded font-mono text-sm font-bold text-slate-700">{fmt(vt.announcedValue, 0)}</div>
+                      )}
+                      <span className="text-[10px] text-slate-400">萬</span>
+                      <button onClick={()=>upVT("announcedValueOverride", vt.isOverridden ? null : vt.announcedAuto)}
+                        title={vt.isOverridden ? "改回自動帶值" : "切換為手動覆寫"}
+                        className={"px-2 py-1 text-[10px] font-bold rounded border "+(vt.isOverridden?"bg-slate-100 text-slate-600 border-slate-300":"bg-violet-50 text-violet-700 border-violet-300 hover:bg-violet-100")}>
+                        {vt.isOverridden ? "↻ 自動" : "📝 覆寫"}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-[11px] text-slate-600">容積買賣比例 (佔公告總值)</div>
+                    <div className="flex items-center gap-1">
+                      <NI value={Number(vtCfg.pricePct)||0} onChange={v=>upVT("pricePct", v)} step={10} className="w-20 text-right"/>
+                      <span className="text-[10px] text-slate-400">%</span>
+                    </div>
+                  </div>
+                  <div className="bg-sky-50 rounded-lg p-3 border border-sky-200 flex items-center justify-between">
+                    <div className="text-[11px] text-emerald-700 font-bold">容積出售收入</div>
+                    <div className="font-mono font-black text-emerald-800 text-lg">{fmt(vt.autoRevenue, 0)} 萬</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 額外成本 */}
+              <div className="bg-white rounded-2xl border shadow-sm p-4">
+                <div className="text-sm font-bold text-rose-700 mb-2 inline-flex items-center gap-1.5"><Icon name="minus-circle" size={13}/> 額外成本 (例: 仲介費 / 地政規費 / 古蹟維護費)</div>
+                {(vtCfg.extraCosts || []).length === 0 && (
+                  <div className="text-[11px] text-slate-400 italic py-2">尚無項目, 按下方「+ 新增成本」開始添加</div>
+                )}
+                {(vtCfg.extraCosts || []).map(c => (
+                  <div key={c.id} className="flex items-center gap-2 mb-2">
+                    <input type="text" value={c.label || ""} onChange={e=>updVTCost(c.id, "label", e.target.value)}
+                      placeholder="項目名稱 (例: 仲介費)"
+                      className="flex-1 text-xs px-2 py-1 border rounded bg-slate-50"/>
+                    <NI value={Number(c.amount)||0} onChange={v=>updVTCost(c.id, "amount", v)} step={10} className="w-24 text-right"/>
+                    <span className="text-[10px] text-slate-400">萬</span>
+                    <button onClick={()=>delVTCost(c.id)} className="px-2 py-1 bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold rounded">✕</button>
+                  </div>
+                ))}
+                <button onClick={addVTCost} className="px-3 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 text-[11px] font-bold rounded border border-rose-300">+ 新增成本</button>
+                <div className="mt-2 pt-2 border-t border-slate-200 flex justify-between text-[12px]">
+                  <span className="text-rose-700 font-bold">成本小計</span>
+                  <span className="font-mono font-bold text-rose-800">{fmt(vt.totalCosts, 0)} 萬</span>
+                </div>
+              </div>
+
+              {/* 額外收益 */}
+              <div className="bg-white rounded-2xl border shadow-sm p-4">
+                <div className="text-sm font-bold text-emerald-700 mb-2 inline-flex items-center gap-1.5"><Icon name="plus-circle" size={13}/> 額外收益 (例: 既有建築租金 / 出售)</div>
+                {(vtCfg.extraRevenues || []).length === 0 && (
+                  <div className="text-[11px] text-slate-400 italic py-2">尚無項目, 按下方「+ 新增收益」開始添加</div>
+                )}
+                {(vtCfg.extraRevenues || []).map(c => (
+                  <div key={c.id} className="flex items-center gap-2 mb-2">
+                    <input type="text" value={c.label || ""} onChange={e=>updVTRev(c.id, "label", e.target.value)}
+                      placeholder="項目名稱 (例: 既有建築租金)"
+                      className="flex-1 text-xs px-2 py-1 border rounded bg-slate-50"/>
+                    <NI value={Number(c.amount)||0} onChange={v=>updVTRev(c.id, "amount", v)} step={10} className="w-24 text-right"/>
+                    <span className="text-[10px] text-slate-400">萬</span>
+                    <button onClick={()=>delVTRev(c.id)} className="px-2 py-1 bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold rounded">✕</button>
+                  </div>
+                ))}
+                <button onClick={addVTRev} className="px-3 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-[11px] font-bold rounded border border-emerald-300">+ 新增收益</button>
+                <div className="mt-2 pt-2 border-t border-slate-200 flex justify-between text-[12px]">
+                  <span className="text-emerald-700 font-bold">收益小計</span>
+                  <span className="font-mono font-bold text-emerald-800">{fmt(vt.totalRevenues, 0)} 萬</span>
+                </div>
+              </div>
+
+              {/* 淨收益 */}
+              <div className="bg-gradient-to-r from-sky-50 to-cyan-100 rounded-2xl border-2 border-sky-400 p-4">
+                <div className="text-[11px] text-emerald-700 mb-1">淨收益 (情境模擬)</div>
+                <div className={"text-3xl font-black font-mono "+(vt.netProfit>=0?"text-emerald-800":"text-rose-700")}>
+                  {fmt(vt.netProfit, 0)} 萬
+                </div>
+                <div className="text-[10px] text-slate-600 mt-1">
+                  = 容積出售 ({fmt(vt.autoRevenue, 0)}) + 收益 ({fmt(vt.totalRevenues, 0)}) − 成本 ({fmt(vt.totalCosts, 0)})
+                </div>
+                <div className="text-[10px] text-amber-700 mt-2 bg-amber-50 rounded p-1.5 border border-amber-200">
+                  <Icon name="info" size={11} className="inline mr-1"/> 公保地容積移轉 (即捐贈公保地) 依土地稅法為免稅, 不計土增稅。
+                </div>
+                {vt.includeInT8 && (
+                  <div className="mt-2 text-[11px] text-emerald-700 font-bold bg-white/50 rounded p-1.5 border border-sky-300">
+                    ✓ 此淨收益已計入「投資綜合報告 (T8)」
+                  </div>
+                )}
+              </div>
+            </>)}
+          </div>
+        );
+      })()}
+
       {/* ─── 選單一：不動產處分效益 ─── */}
-      {isSingle && <>
+      {!isVolTab && isSingle && <>
+        {/* 自 v67: single 模式也加取得日 UI */}
+        <div className="bg-white rounded-2xl border shadow-sm p-4">
+          <div className="text-xs font-bold text-slate-500 mb-2 inline-flex items-center gap-1.5"><Icon name="calendar" size={12}/> 取得日期 (房地合一稅持有年期計算基準)</div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <YearSel v={ce.acqYear} onChange={v=>upCB("acquireYear",v)}/>
+            <MonSel v={ce.acqMonth} onChange={v=>upCB("acquireMonth",v)}/>
+            {ce.acqAuto
+              ? <span className="text-[10px] bg-sky-100 text-emerald-700 px-2 py-0.5 rounded">自動 (預設用交屋日; 若無則用銷售時程最後一期)</span>
+              : <>
+                <span className="text-[10px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded">手動覆寫</span>
+                <button onClick={()=>{upCB("acquireYear",0); upCB("acquireMonth",0);}} className="text-rose-400 hover:text-rose-600 text-xs">↻ 還原自動</button>
+              </>}
+            <span className="text-[10px] text-slate-400 ml-auto">處分日 = 取得日 + {ce.holdYears} 年 (持有年期)</span>
+          </div>
+        </div>
         <div className="bg-white rounded-2xl border shadow-sm p-4">
           <div className="text-sm font-bold text-emerald-800 mb-3 inline-flex items-center gap-1.5"><Icon name="tag" size={13}/> 不動產處分效益</div>
 
@@ -6026,7 +6676,7 @@ function T7({p, sP}) {
 
           {/* 土地價值認列方式 */}
           <div className="bg-sky-50 rounded-lg p-3 border border-sky-200 mb-3">
-            <div className="text-xs font-bold text-sky-800 mb-2">土地價值認列方式 (三選一)</div>
+            <div className="text-xs font-bold text-emerald-800 mb-2">土地價值認列方式 (三選一)</div>
             <div className="space-y-1.5">
               <label className="flex items-center justify-between p-2 bg-white rounded border hover:bg-sky-50 cursor-pointer">
                 <div className="flex items-center gap-2">
@@ -6079,7 +6729,7 @@ function T7({p, sP}) {
       </>}
 
       {/* ─── 選單二：長期持有不動產效益 ─── */}
-      {!isSingle && <>
+      {!isVolTab && !isSingle && <>
         {/* 互斥警示 */}
         {ce.longHold.areaConflict && (
           <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-3 flex items-start gap-2">
@@ -6098,7 +6748,7 @@ function T7({p, sP}) {
             <YearSel v={ce.acqYear} onChange={v=>upCB("acquireYear",v)}/>
             <MonSel v={ce.acqMonth} onChange={v=>upCB("acquireMonth",v)}/>
             {ce.acqAuto
-              ? <span className="text-[10px] bg-sky-100 text-sky-700 px-2 py-0.5 rounded">自動 (取銷售時程最後一期)</span>
+              ? <span className="text-[10px] bg-sky-100 text-emerald-700 px-2 py-0.5 rounded">自動 (預設用交屋日; 若無則用銷售時程最後一期)</span>
               : <>
                 <span className="text-[10px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded">手動覆寫</span>
                 <button onClick={()=>{upCB("acquireYear",0); upCB("acquireMonth",0);}} className="text-rose-400 hover:text-rose-600 text-xs">↻ 還原自動</button>
@@ -6412,6 +7062,38 @@ function T7({p, sP}) {
       </>}
 
       {/* 經營分析總計 */}
+      {isVolTab ? (
+        // 容移摘要
+        <div className="bg-gradient-to-br from-sky-100 to-cyan-100 rounded-2xl border-2 border-sky-400 shadow-md p-4">
+          <div className="text-sm font-bold text-emerald-900 mb-3 inline-flex items-center gap-1.5"><Icon name="target" size={13}/> 經營分析總計 (公保地容積移轉情境)</div>
+          {!ce.volTransfer.enabled ? (
+            <div className="bg-white/70 rounded-lg p-4 text-center text-slate-500 text-sm">
+              此情境模擬尚未啟用
+              <div className="text-[11px] mt-1 text-slate-400">請於上方勾選「啟用此情境模擬」</div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-white/70 rounded-lg p-3 border border-sky-200">
+                <div className="text-[10px] text-emerald-600 font-bold">容積出售收入</div>
+                <div className="text-base font-black font-mono text-emerald-800">{fmt(ce.volTransfer.autoRevenue,0)} 萬</div>
+                <div className="text-[9px] text-slate-500">公告 {fmt(ce.volTransfer.announcedValue,0)} × {ce.volTransfer.pricePct}%</div>
+              </div>
+              <div className="bg-white/70 rounded-lg p-3 border border-emerald-200">
+                <div className="text-[10px] text-emerald-600 font-bold">額外收益 − 成本</div>
+                <div className={"text-base font-black font-mono "+((ce.volTransfer.totalRevenues - ce.volTransfer.totalCosts)>=0?"text-emerald-800":"text-rose-700")}>
+                  {fmt(ce.volTransfer.totalRevenues - ce.volTransfer.totalCosts, 0)} 萬
+                </div>
+                <div className="text-[9px] text-slate-500">+{fmt(ce.volTransfer.totalRevenues,0)} / -{fmt(ce.volTransfer.totalCosts,0)}</div>
+              </div>
+              <div className="bg-white rounded-lg p-3 border-2 border-sky-400">
+                <div className="text-[10px] text-emerald-700 font-bold">淨收益 (情境)</div>
+                <div className={"text-xl font-black font-mono "+(ce.volTransfer.netProfit>=0?"text-emerald-800":"text-rose-700")}>{fmt(ce.volTransfer.netProfit,0)} 萬</div>
+                <div className="text-[9px] text-slate-500">{ce.volTransfer.includeInT8 ? "✓ 計入 T8" : "未計入 T8"}</div>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
       <div className="bg-gradient-to-br from-amber-100 to-amber-100 rounded-2xl border-2 border-amber-400 shadow-md p-4">
         <div className="text-sm font-bold text-amber-900 mb-3 inline-flex items-center gap-1.5"><Icon name="target" size={13}/> 經營分析總計 ({isSingle ? "不動產處分效益" : "長期持有不動產效益"})</div>
         {isSingle ? (
@@ -6453,6 +7135,7 @@ function T7({p, sP}) {
           </div>
         </div>
       </div>
+      )}
 
       <div className="text-[10px] text-slate-500 italic text-center px-2">
         ※ 經營分析以「我的身分」為主視角；切換身分請至「六、合建分回」。<br/>
@@ -6542,7 +7225,7 @@ function SliderPlayground({p, dr, basePrice, basePerPing, baseCost, baseProfit, 
           <span className="text-xs font-bold text-slate-700 inline-flex items-center gap-1.5"><Icon name="hammer" size={12}/> 造價變動</span>
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-slate-500">當前:</span>
-            <span className="font-mono font-bold text-sky-700 text-sm">{newCostPerPing.toFixed(2)} 萬/坪</span>
+            <span className="font-mono font-bold text-emerald-700 text-sm">{newCostPerPing.toFixed(2)} 萬/坪</span>
             <span className={"text-[11px] font-mono font-bold px-1.5 py-0.5 rounded "+(costDelta<=0?"text-emerald-700 bg-emerald-100":"text-rose-700 bg-rose-100")}>
               {costDelta>0?"+":""}{costDelta.toFixed(1)}%
             </span>
@@ -6553,7 +7236,7 @@ function SliderPlayground({p, dr, basePrice, basePerPing, baseCost, baseProfit, 
           className="w-full accent-sky-500"/>
         <div className="flex justify-between text-[9px] text-slate-400">
           <span>-50%</span>
-          <span className="text-sky-600 font-bold">基準 ({basePerPing.toFixed(2)})</span>
+          <span className="text-emerald-600 font-bold">基準 ({basePerPing.toFixed(2)})</span>
           <span>+50%</span>
         </div>
       </div>
@@ -6717,11 +7400,11 @@ function T8({p, sP}) {
             <div className="text-[10px] text-slate-500">使 NPV=0 的折現率</div>
           </div>
           <div className="bg-gradient-to-br from-sky-50 to-sky-100 rounded-xl p-4 border-2 border-sky-400 shadow-sm">
-            <div className="text-[11px] text-sky-700 font-bold flex items-center gap-1">
+            <div className="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
               <span className="bg-sky-500 text-white px-1.5 py-0.5 rounded text-[9px]">ROI</span>
               總投入報酬率
             </div>
-            <div className={"text-3xl font-black font-mono mt-1 "+((snap.burdenCost+snap.ll+snap.cl)>0?(snap.roi>=0?"text-sky-700":"text-rose-700"):"text-slate-400")}>
+            <div className={"text-3xl font-black font-mono mt-1 "+((snap.burdenCost+snap.ll+snap.cl)>0?(snap.roi>=0?"text-emerald-700":"text-rose-700"):"text-slate-400")}>
               {(snap.burdenCost+snap.ll+snap.cl)>0 ? (snap.roi*100).toFixed(1)+"%" : "—"}
             </div>
             <div className="text-[10px] text-slate-500">淨利 / 總成本 (含融資)</div>
@@ -6741,8 +7424,8 @@ function T8({p, sP}) {
         {/* 第二排: NPV / 還本期數 / Cap Rate */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
           <div className="bg-gradient-to-br from-sky-50 to-sky-100 rounded-xl p-3 border-2 border-sky-300">
-            <div className="text-[10px] text-sky-700 font-bold">NPV</div>
-            <div className={"text-xl font-black font-mono "+(snap.npv>=0?"text-sky-700":"text-rose-700")}>{fmt(snap.npv)}</div>
+            <div className="text-[10px] text-emerald-700 font-bold">NPV</div>
+            <div className={"text-xl font-black font-mono "+(snap.npv>=0?"text-emerald-700":"text-rose-700")}>{fmt(snap.npv)}</div>
             <div className="text-[9px] text-slate-400">萬 (r={(snap.discountRate*100).toFixed(1)}%)</div>
           </div>
           <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-3 border-2 border-amber-300">
@@ -6784,11 +7467,11 @@ function T8({p, sP}) {
 
         {/* 第四排: 現金流彈性 (2 個指標) */}
         <div className="mt-3 pt-3 border-t border-slate-200">
-          <div className="text-[11px] font-bold text-sky-700 mb-2 inline-flex items-center gap-1.5"><Icon name="droplets" size={11}/> 現金流彈性指標</div>
+          <div className="text-[11px] font-bold text-emerald-700 mb-2 inline-flex items-center gap-1.5"><Icon name="droplets" size={11}/> 現金流彈性指標</div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="bg-gradient-to-br from-sky-50 to-sky-100 rounded-xl p-3 border-2 border-sky-300">
-              <div className="text-[10px] text-sky-700 font-bold">早期回收率 (10 年)</div>
-              <div className="text-xl font-black font-mono text-sky-700">
+              <div className="text-[10px] text-emerald-700 font-bold">早期回收率 (10 年)</div>
+              <div className="text-xl font-black font-mono text-emerald-700">
                 {snap.earlyRecovery10==null ? "—" : (snap.earlyRecovery10*100).toFixed(1)+"%"}
               </div>
               <div className="text-[9px] text-slate-400">前 10 年累計流入 / 總投入</div>
@@ -7005,7 +7688,7 @@ function T8({p, sP}) {
                   </tr>
                   {/* ─── 現金流彈性指標 ─── */}
                   <tr className="border-t-2 border-sky-300 bg-sky-50/30">
-                    <td className="py-1 px-2 text-sky-800 font-bold text-[11px]" colSpan={4}><span className="inline-flex items-center gap-1.5"><Icon name="droplets" size={11}/> 現金流彈性</span></td>
+                    <td className="py-1 px-2 text-emerald-800 font-bold text-[11px]" colSpan={4}><span className="inline-flex items-center gap-1.5"><Icon name="droplets" size={11}/> 現金流彈性</span></td>
                   </tr>
                   <tr>
                     <td className="py-1 px-2 text-slate-600 font-bold">早期回收率 (10 年)</td>
@@ -7111,16 +7794,28 @@ function T2({p, sP}) {
       <div className="bg-white rounded-2xl border shadow-sm p-4">
         <div className="text-xs font-bold text-slate-500 mb-2 inline-flex items-center gap-1.5"><Icon name="clipboard-edit" size={12}/> 情境設定 (同售價排一起)</div>
         <div className="flex flex-wrap gap-2">
-          {p.scenarios.map(sc=>(
-            <div key={sc.id} className="bg-slate-50 rounded-lg p-2 border flex items-center gap-2">
-              <input type="text" value={sc.label} onChange={e=>sP({...p,scenarios:p.scenarios.map(s=>s.id===sc.id?{...s,label:e.target.value}:s)})} className="w-16 text-sm font-bold text-slate-700 bg-transparent border-b focus:outline-none"/>
-              <span className="text-[10px] text-slate-400">售</span><NI value={sc.price} onChange={v=>sP({...p,scenarios:p.scenarios.map(s=>s.id===sc.id?{...s,price:v}:s)})} className="w-14 text-center"/>
-              <span className="text-[10px] text-slate-400">造</span><NI value={sc.cost} onChange={v=>sP({...p,scenarios:p.scenarios.map(s=>s.id===sc.id?{...s,cost:v}:s)})} className="w-14 text-center"/>
-              {p.scenarios.length>1&&<BtnDel onClick={()=>sP({...p,scenarios:p.scenarios.filter(s=>s.id!==sc.id)})}/>}
-            </div>
-          ))}
-          <Btn onClick={()=>sP({...p,scenarios:[...p.scenarios,{id:uid(),label:"方案"+(p.scenarios.length+1),price:52,cost:24}]})}>+ 新增</Btn>
+          {p.scenarios.map(sc=>{
+            // 自 v64: 預設值 = 住宅單價 (salesMix.res.uP || p.uP) + p.cC
+            const defaultPrice = Number(p.salesMix?.res?.uP) || Number(p.uP) || 0;
+            const defaultCost  = Number(p.cC) || 0;
+            const isDefault = Math.abs(sc.price - defaultPrice) < 0.01 && Math.abs(sc.cost - defaultCost) < 0.01;
+            return (
+              <div key={sc.id} className="bg-slate-50 rounded-lg p-2 border flex items-center gap-2">
+                <input type="text" value={sc.label} onChange={e=>sP({...p,scenarios:p.scenarios.map(s=>s.id===sc.id?{...s,label:e.target.value}:s)})} className="w-16 text-sm font-bold text-slate-700 bg-transparent border-b focus:outline-none"/>
+                <span className="text-[10px] text-slate-400">售</span><NI value={sc.price} onChange={v=>sP({...p,scenarios:p.scenarios.map(s=>s.id===sc.id?{...s,price:v}:s)})} className="w-14 text-center"/>
+                <span className="text-[10px] text-slate-400">造</span><NI value={sc.cost} onChange={v=>sP({...p,scenarios:p.scenarios.map(s=>s.id===sc.id?{...s,cost:v}:s)})} className="w-14 text-center"/>
+                <button onClick={()=>sP({...p,scenarios:p.scenarios.map(s=>s.id===sc.id?{...s,price:defaultPrice,cost:defaultCost}:s)})}
+                  title={`重設為預設 (售 ${fmt2(defaultPrice)} / 造 ${fmt2(defaultCost)})`}
+                  className={"px-1.5 py-1 text-[11px] rounded border "+(isDefault?"bg-slate-100 text-slate-400 border-slate-200":"bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100 font-bold")}>
+                  ↻
+                </button>
+                {p.scenarios.length>1&&<BtnDel onClick={()=>sP({...p,scenarios:p.scenarios.filter(s=>s.id!==sc.id)})}/>}
+              </div>
+            );
+          })}
+          <Btn onClick={()=>sP({...p,scenarios:[...p.scenarios,{id:uid(),label:"方案"+(p.scenarios.length+1),price:(Number(p.salesMix?.res?.uP)||Number(p.uP)||0),cost:(Number(p.cC)||0)}]})}>+ 新增 (帶預設)</Btn>
         </div>
+        <div className="text-[10px] text-slate-400 mt-2">↻ 重設為「住宅單價 + 基本造價」(目前: 售 {fmt2(Number(p.salesMix?.res?.uP)||Number(p.uP)||0)} 萬/坪, 造 {fmt2(Number(p.cC)||0)} 萬/坪)</div>
       </div>
       <div className="rounded-xl border-l-4 border-amber-500 bg-amber-50 p-3 text-[11px]">
         <div className="font-bold text-amber-900 mb-1">【立即處分基準】損益分析方案表</div>
@@ -7133,8 +7828,8 @@ function T2({p, sP}) {
       <div className="rounded-2xl border shadow-sm bg-white overflow-hidden"><div className="overflow-x-auto">
         <table className="w-full text-sm" style={{minWidth:Math.max(600,cols.length*100+150)}}>
           <thead>
-            <tr className="bg-slate-700"><th className="py-2.5 px-3 text-left text-white font-bold text-xs sticky left-0 bg-slate-700 z-20" style={{minWidth:130}}>項目</th>{sorted.map(sc=><th key={sc.id} colSpan={cPS} className="py-2.5 px-2 text-center text-white border-l border-slate-600"><div className="font-bold text-xs">{sc.label}</div><div className="text-[10px] opacity-60">售{sc.price}/造{sc.cost}</div></th>)}</tr>
-            <tr className="bg-slate-100 border-b"><th className="py-1.5 px-3 sticky left-0 bg-slate-100 z-20 text-xs text-slate-500">萬元</th>{cols.map((c,i)=><th key={i} className={"py-1.5 px-2 text-center text-[11px] font-bold "+(c.isMe?"text-amber-800 bg-amber-100":c.role==="b"?"text-emerald-700 bg-emerald-50/60":"text-sky-700 bg-sky-50/60")}>{c.label} {(c.ratio*100).toFixed(0)}%</th>)}</tr>
+            <tr className="bg-emerald-600"><th className="py-2.5 px-3 text-left text-white font-bold text-xs sticky left-0 bg-emerald-600 z-20" style={{minWidth:130}}>項目</th>{sorted.map(sc=><th key={sc.id} colSpan={cPS} className="py-2.5 px-2 text-center text-white border-l border-emerald-500"><div className="font-bold text-xs">{sc.label}</div><div className="text-[10px] opacity-60">售{fmt2(sc.price)}/造{fmt2(sc.cost)}</div></th>)}</tr>
+            <tr className="bg-slate-100 border-b"><th className="py-1.5 px-3 sticky left-0 bg-slate-100 z-20 text-xs text-slate-500">萬元</th>{cols.map((c,i)=><th key={i} className={"py-1.5 px-2 text-center text-[11px] font-bold "+(c.isMe?"text-amber-800 bg-amber-100":c.role==="b"?"text-emerald-700 bg-emerald-50/60":"text-emerald-700 bg-sky-50/60")}>{c.label} {(c.ratio*100).toFixed(0)}%</th>)}</tr>
           </thead>
           <tbody>
             <Sec l="【收入】" c="text-emerald-700 bg-emerald-100/50"/><R l="分回金額" gV={s=>s.sh} bold/>
@@ -7152,7 +7847,7 @@ function T2({p, sP}) {
             <R l={ce_t2.landRegime === "old" ? "房地合一稅 (含土增稅)" : "房地合一稅"} gV={s=>s.itx}/>
             <R l="✦稅後淨利" gV={(s,c)=> s.pat - (c.role==="b" ? 0 : dr.landValue * (c.ratio||0))} bold bg="bg-amber-50/60"/>
             <R l="毛利率" gV={s=>s.gm} isPct/><R l="淨利率" gV={s=>s.nm} isPct/><R l="成本報酬率" gV={s=>s.cr} isPct/>
-            <Sec l="【融資】" c="text-sky-700 bg-sky-100/50"/>
+            <Sec l="【融資】" c="text-emerald-700 bg-sky-100/50"/>
             <R l="土融" gV={s=>s.ll}/><R l="建融" gV={s=>s.cl}/><R l="融資合計" gV={s=>s.tl} bold/><R l="自有資金" gV={s=>s.eq} bold bg="bg-slate-50"/>
           </tbody>
         </table>
@@ -7191,8 +7886,8 @@ function T2({p, sP}) {
                     <div className="text-[9px] text-slate-400">(來自損益分析)</div>
                   </div>
                   <div className="bg-white/80 rounded-xl p-3 border-2 border-sky-300">
-                    <div className="text-[10px] text-sky-600 font-bold">②不動產處分淨利 (稅後)</div>
-                    <div className={"text-lg font-black font-mono "+(ce.single.netProfit>=0?"text-sky-700":"text-rose-600")}>{fmt(ce.single.netProfit)} 萬</div>
+                    <div className="text-[10px] text-emerald-600 font-bold">②不動產處分淨利 (稅後)</div>
+                    <div className={"text-lg font-black font-mono "+(ce.single.netProfit>=0?"text-emerald-700":"text-rose-600")}>{fmt(ce.single.netProfit)} 萬</div>
                     <div className="text-[9px] text-slate-400">已扣{ce.landRegime==="old"?"土地增值稅":"房地合一稅"}</div>
                   </div>
                   <div className="bg-white/80 rounded-xl p-3 border-2 border-rose-300">
@@ -7206,8 +7901,8 @@ function T2({p, sP}) {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <div className="bg-white/80 rounded-xl p-3 border-2 border-sky-300">
-                    <div className="text-[10px] text-sky-600 font-bold">①處分淨利合計 (稅後)</div>
-                    <div className={"text-lg font-black font-mono "+(ce.longHold.pd_sumNetProfit>=0?"text-sky-700":"text-rose-600")}>{fmt(ce.longHold.pd_sumNetProfit)} 萬</div>
+                    <div className="text-[10px] text-emerald-600 font-bold">①處分淨利合計 (稅後)</div>
+                    <div className={"text-lg font-black font-mono "+(ce.longHold.pd_sumNetProfit>=0?"text-emerald-700":"text-rose-600")}>{fmt(ce.longHold.pd_sumNetProfit)} 萬</div>
                     <div className="text-[9px] text-slate-400">{ce.longHold.disposals.filter(d=>d.enabled).length} 筆處分, 含稅 -{fmt(lhTax)}</div>
                   </div>
                   <div className="bg-white/80 rounded-xl p-3 border-2 border-violet-300">
@@ -7264,8 +7959,8 @@ function T3({p}) {
     : null;
   const sc = useMemo(() => {
     return myOwner
-      ? cS(p, dr, p.uP, p.cC, "o", myOwner.ratio)
-      : cS(p, dr, p.uP, p.cC, "b", 0);
+      ? cS(p, dr, dr.weightedUP, p.cC, "o", myOwner.ratio)
+      : cS(p, dr, dr.weightedUP, p.cC, "b", 0);
   }, [p]);
   const mcf = useMemo(() => cMCF(p, dr, sc), [p, sc]);
   const {months, minBal, maxGap, totalM} = mcf;
@@ -7322,16 +8017,44 @@ function T3({p}) {
       });
     }
     // 取得日期 (single 模式)
-    if (cb.mode === "single" && p.salesSched && p.salesSched.length > 0) {
-      const last = [...p.salesSched].sort((a,b) => (b.year*12+b.month) - (a.year*12+a.month))[0];
-      list.push({
-        date: `${last.year}/${String(last.month).padStart(2,"0")}`,
-        absDate: last.year * 12 + last.month,
-        label: "成屋/取得",
-        type: "income",
-        icon: "home",
-        note: "一次處分日期"
-      });
+    // 自 v67: 優先用交屋日, fallback 銷售時程最後一期
+    if (cb.mode === "single") {
+      const hd = p.handoverDate || {};
+      const hdY = Number(hd.year) || 0;
+      const hdM = Number(hd.month) || 0;
+      let useY, useM, useLabel;
+      if (hdY > 0 && hdM > 0) {
+        useY = hdY; useM = hdM; useLabel = "成屋/交屋";
+      } else if (p.salesSched && p.salesSched.length > 0) {
+        const last = [...p.salesSched].sort((a,b) => (b.year*12+b.month) - (a.year*12+a.month))[0];
+        useY = last.year; useM = last.month; useLabel = "成屋/取得 (依銷售時程)";
+      }
+      if (useY && useM) {
+        list.push({
+          date: `${useY}/${String(useM).padStart(2,"0")}`,
+          absDate: useY * 12 + useM,
+          label: useLabel,
+          type: "income",
+          icon: "key",
+          note: hdY > 0 ? "交屋日 (基本假設三)" : "未設定交屋日, 用銷售時程末期"
+        });
+      }
+    }
+    // 自 v67: longHold 模式也顯示交屋日 (若設定)
+    if (cb.mode === "longHold") {
+      const hd = p.handoverDate || {};
+      const hdY = Number(hd.year) || 0;
+      const hdM = Number(hd.month) || 0;
+      if (hdY > 0 && hdM > 0) {
+        list.push({
+          date: `${hdY}/${String(hdM).padStart(2,"0")}`,
+          absDate: hdY * 12 + hdM,
+          label: "交屋",
+          type: "income",
+          icon: "key",
+          note: "交屋日 (基本假設三)"
+        });
+      }
     }
     return list.sort((a,b) => a.absDate - b.absDate);
   }, [p]);
@@ -7351,16 +8074,16 @@ function T3({p}) {
           {
             label: "收入",
             data: yearly.map(y => y.income),
-            backgroundColor: "rgba(16, 185, 129, 0.7)",
-            borderColor: "rgba(16, 185, 129, 1)",
+            backgroundColor: "rgba(139,155,110,0.65)",
+            borderColor: "rgba(139,155,110,1)",
             borderWidth: 1,
             order: 2,
           },
           {
             label: "支出",
             data: yearly.map(y => -y.expense),
-            backgroundColor: "rgba(244, 63, 94, 0.7)",
-            borderColor: "rgba(244, 63, 94, 1)",
+            backgroundColor: "rgba(188,97,73,0.65)",
+            borderColor: "rgba(188,97,73,1)",
             borderWidth: 1,
             order: 2,
           },
@@ -7368,8 +8091,8 @@ function T3({p}) {
             label: "累計餘額",
             type: "line",
             data: yearly.map(y => y.cum),
-            borderColor: "rgba(139, 92, 246, 1)",
-            backgroundColor: "rgba(139, 92, 246, 0.1)",
+            borderColor: "rgba(106,104,95,1)",
+            backgroundColor: "rgba(106,104,95,0.12)",
             borderWidth: 2,
             fill: false,
             tension: 0.2,
@@ -7414,7 +8137,7 @@ function T3({p}) {
         <KPI label="稅後淨利" value={fmt(snap.totalProfit)} unit="萬" color={snap.totalProfit<0?"text-rose-700":"text-emerald-700"} bg={snap.totalProfit<0?"bg-rose-50/80":"bg-emerald-50/80"}/>
         <KPI label="ROI" value={(snap.burdenCost+snap.ll+snap.cl)>0 ? (snap.roi*100).toFixed(1)+"%" : "—"} color="text-violet-700" bg="bg-violet-50/80"/>
         <KPI label="IRR" value={snap.irr==null?"—":(snap.irr*100).toFixed(2)+"%"} color="text-violet-700" bg="bg-violet-50/80"/>
-        <KPI label="還本期" value={snap.payback==null?"—":Math.ceil(snap.payback)+" 年"} color="text-sky-700" bg="bg-sky-50/80"/>
+        <KPI label="還本期" value={snap.payback==null?"—":Math.ceil(snap.payback)+" 年"} color="text-emerald-700" bg="bg-sky-50/80"/>
         <KPI label="投資年期" value={investYears} unit="年" color="text-slate-800" bg="bg-slate-50/80"/>
       </div>
       <div className="text-[10px] text-slate-500 italic -mt-2">
@@ -7441,7 +8164,7 @@ function T3({p}) {
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="bg-slate-700 text-white">
+              <tr className="bg-emerald-600 text-white">
                 <th className="py-2 px-2 text-center">年度</th>
                 <th className="py-2 px-2 text-right">開發支出</th>
                 <th className="py-2 px-2 text-right">處分收入</th>
@@ -7506,7 +8229,7 @@ function T3({p}) {
               ["期初資金",fmt(p.initCash)+"萬","text-slate-800","bg-slate-50"],
               ["最低餘額",fmt(minBal)+"萬",minBal<0?"text-rose-700":"text-emerald-700","bg-slate-50"],
               ["資金缺口",maxGap>0?fmt(maxGap)+"萬":"無缺口",maxGap>0?"text-rose-800":"text-emerald-700",maxGap>0?"bg-rose-50":"bg-emerald-50"],
-              ["建議資金",fmt(Math.max(maxGap,0)+(p.initCash||3000))+"萬","text-sky-800","bg-sky-50"]
+              ["建議資金",fmt(Math.max(maxGap,0)+(p.initCash||3000))+"萬","text-emerald-800","bg-sky-50"]
             ].map(([l,v,c,bg],i) => (
               <div key={i} className={"flex-1 min-w-[120px] "+bg+" rounded-xl p-3 border"}><div className="text-[10px] text-slate-400">{l}</div><div className={"font-black text-lg "+c}>{v}</div></div>
             ))}
@@ -7536,12 +8259,27 @@ function T4({p, sP}) {
   const myOwner = (myRole.startsWith("owner_") && p.jb)
     ? p.owners.find(o => ("owner_"+o.id) === myRole)
     : null;
-  const csFor = (price, cost) => myOwner
-    ? cS(p, dr, price, cost, "o", myOwner.ratio)
-    : cS(p, dr, price, cost, "b", 0);
+  // 自 v64: 敏感度只調住宅單價, 店面/辦公固定
+  // csFor 收的 resPrice 是「住宅單價」, 內部換算為「等效加權平均單價」後送 cS
+  const _retailUP = Number(p.salesMix?.retail?.uP) || 0;
+  const _officeUP = Number(p.salesMix?.office?.uP) || 0;
+  const _resArea = dr.salesMix.res.area;
+  const _retailArea = dr.salesMix.retail.area;
+  const _officeArea = dr.salesMix.office.area;
+  const _houseArea = dr.salesMix.houseArea;
+  const resToWeighted = (resPrice) => {
+    if (_houseArea <= 0) return resPrice;
+    return (resPrice * _resArea + _retailUP * _retailArea + _officeUP * _officeArea) / _houseArea;
+  };
+  const csFor = (resPrice, cost) => {
+    const eqWeightedUP = resToWeighted(resPrice);
+    return myOwner
+      ? cS(p, dr, eqWeightedUP, cost, "o", myOwner.ratio)
+      : cS(p, dr, eqWeightedUP, cost, "b", 0);
+  };
 
-  // 基準
-  const basePrice = Number(p.uP) || 0;
+  // 基準: 住宅單價
+  const basePrice = Number(p.salesMix?.res?.uP) || Number(p.uP) || 0;
   const baseCost = Number(p.cC) || 0;
   const baseProfit = useMemo(() => csFor(basePrice, baseCost).pat, [p]);
 
@@ -7591,7 +8329,8 @@ function T4({p, sP}) {
           <div>
             <div className="text-sm font-bold text-violet-800 inline-flex items-center gap-1.5"><Icon name="target" size={13}/> 敏感度分析</div>
             <div className="text-[11px] text-violet-600 mt-0.5">
-              基準: 售價 <b>{basePrice.toFixed(2)}</b> 萬/坪 · 造價 <b>{baseCost.toFixed(2)}</b> 萬/坪 · 基準淨利 <b className={baseProfit<0?"text-rose-700":"text-emerald-700"}>{fmt(baseProfit)}</b> 萬
+              基準: 住宅售價 <b>{basePrice.toFixed(2)}</b> 萬/坪 · 造價 <b>{baseCost.toFixed(2)}</b> 萬/坪 · 基準淨利 <b className={baseProfit<0?"text-rose-700":"text-emerald-700"}>{fmt(baseProfit)}</b> 萬
+              <span className="ml-1 text-[10px] text-amber-700">(僅住宅單價變動, 店面/辦公售價固定)</span>
             </div>
           </div>
           <div className="text-[10px] text-slate-500 italic">
@@ -7642,8 +8381,8 @@ function T4({p, sP}) {
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="bg-slate-700 text-white">
-                  <th className="py-2 px-2 text-center sticky left-0 bg-slate-700 z-10 font-bold" style={{minWidth:90}}>售價↓ \ 造價→</th>
+                <tr className="bg-emerald-600 text-white">
+                  <th className="py-2 px-2 text-center sticky left-0 bg-emerald-600 z-10 font-bold" style={{minWidth:90}}>售價↓ \ 造價→</th>
                   {steps.map((s, i) => (
                     <th key={i} className={"py-2 px-2 text-center font-bold "+(s===0?"bg-sky-600":"")} style={{minWidth:80}}>
                       <div>{costSteps[i].toFixed(2)}</div>
@@ -7655,7 +8394,7 @@ function T4({p, sP}) {
               <tbody>
                 {steps.map((sp, ri) => (
                   <tr key={ri}>
-                    <td className={"py-2 px-2 text-center font-bold sticky left-0 z-10 "+(sp===0?"bg-sky-100 text-sky-800":"bg-slate-100 text-slate-600")}>
+                    <td className={"py-2 px-2 text-center font-bold sticky left-0 z-10 "+(sp===0?"bg-sky-100 text-emerald-800":"bg-slate-100 text-slate-600")}>
                       <div>{priceSteps[ri].toFixed(2)}</div>
                       <div className="text-[9px] opacity-70">{sp>0?"+":""}{sp.toFixed(1)}%</div>
                     </td>
@@ -7877,7 +8616,7 @@ function T5({p, sP}) {
           </div>
         : <div className="rounded-2xl border shadow-sm bg-white overflow-hidden"><div className="overflow-x-auto">
             <table className="w-full text-sm" style={{minWidth:900}}>
-              <thead><tr className="bg-slate-700 text-white"><th className="py-2 px-2 text-left text-xs">戶別</th><th className="py-2 px-2 text-center text-xs">基地</th><th className="py-2 px-2 text-right text-xs">m²</th><th className="py-2 px-2 text-right text-xs">坪</th><th className="py-2 px-2 text-right text-xs">綠地</th>{prs.map((pr,i)=><th key={i} className="py-2 px-2 text-right text-xs">@{pr}萬</th>)}<th className="py-2 px-2 text-center text-xs">×</th></tr></thead>
+              <thead><tr className="bg-emerald-600 text-white"><th className="py-2 px-2 text-left text-xs">戶別</th><th className="py-2 px-2 text-center text-xs">基地</th><th className="py-2 px-2 text-right text-xs">m²</th><th className="py-2 px-2 text-right text-xs">坪</th><th className="py-2 px-2 text-right text-xs">綠地</th>{prs.map((pr,i)=><th key={i} className="py-2 px-2 text-right text-xs">@{pr}萬</th>)}<th className="py-2 px-2 text-center text-xs">×</th></tr></thead>
               <tbody>
                 {groupKeys.map(gk => (
                   <React.Fragment key={gk}>
@@ -8369,7 +9108,7 @@ function exportProjectToExcel(project) {
   XLSX.utils.book_append_sheet(wb, ws2, "損益分析");
 
   /* ── Sheet 3: 現金流 ── */
-  const sc = cS(p, dr, p.uP, p.cC, "b", 0);
+  const sc = cS(p, dr, dr.weightedUP, p.cC, "b", 0);
   const mcf = cMCF(p, dr, sc);
   const monthRows = [
     ["現金流分析 — " + name + " (建商視角)"],
@@ -8462,6 +9201,57 @@ function ProjectManager({projects, currentId, dirty, projectName, setProjectName
   const commitRename = () => { if (editingId && editName.trim()) onRename(editingId, editName.trim()); sEI(null); };
   return (
     <div className="p-3 bg-white rounded-2xl border shadow-sm">
+        {/* ── 目前專案 (可編輯名稱 + 儲存狀態 + 儲存/匯出) ── */}
+        <div className="mb-3 pb-3 border-b border-slate-200">
+          <div className="text-[10px] text-slate-400 font-bold inline-flex items-center gap-1.5 mb-1.5">
+            <Icon name="folder-open" size={11}/> 目前專案
+            <span title={isSaved ? "已儲存" : "尚未儲存"}
+              className={"shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold " + (isSaved ? "bg-emerald-100 text-emerald-700" : "bg-tan-100 text-tan-700")}>
+              <span className={"w-1.5 h-1.5 rounded-full " + (isSaved ? "bg-emerald-500" : "bg-tan-500")}/>
+              {isSaved ? "已儲存" : "未儲存"}
+            </span>
+          </div>
+          <input type="text" value={projectName}
+            onChange={e=>setProjectName(e.target.value)}
+            placeholder="未命名專案"
+            className="w-full font-bold text-sm bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-400 focus:bg-white rounded-lg px-2 py-1.5"/>
+          <div className="flex gap-1.5 mt-2">
+            <button onClick={onSave} title="儲存 (⌘/Ctrl + S)"
+              className="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg transition-colors">
+              <Icon name="save" size={13}/> 儲存
+            </button>
+            <button title="匯出 (Excel / JSON)" onClick={() => {
+              const overlay = document.createElement("div");
+              overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:99999;font-family:sans-serif;";
+              overlay.innerHTML = `
+                <div style="background:#fff;padding:20px 24px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.2);min-width:280px;display:flex;flex-direction:column;gap:14px;">
+                  <div style="font-size:14px;font-weight:700;color:#262420;">匯出本案</div>
+                  <label style="font-size:12px;color:#54524A;display:flex;flex-direction:column;gap:6px;">
+                    請選擇匯出格式
+                    <select id="export-fmt-select" style="padding:6px 10px;border:1px solid #CCC8BD;border-radius:8px;font-size:13px;background:#fff;">
+                      <option value="excel">Excel (.xlsx) — 完整數據</option>
+                      <option value="json">JSON — 專案備份</option>
+                    </select>
+                  </label>
+                  <div style="display:flex;justify-content:flex-end;gap:8px;">
+                    <button id="export-fmt-cancel" style="padding:6px 14px;border:1px solid #CCC8BD;background:#fff;color:#54524A;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">取消</button>
+                    <button id="export-fmt-ok" style="padding:6px 14px;background:#5E7350;color:#fff;border:0;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">匯出</button>
+                  </div>
+                </div>`;
+              document.body.appendChild(overlay);
+              const cleanup = () => overlay.remove();
+              overlay.querySelector("#export-fmt-cancel").onclick = cleanup;
+              overlay.querySelector("#export-fmt-ok").onclick = () => {
+                const fmt = overlay.querySelector("#export-fmt-select").value;
+                cleanup();
+                if (fmt === "excel") onExportExcel(); else onExport();
+              };
+              overlay.onclick = (e) => { if (e.target === overlay) cleanup(); };
+            }} className="px-2.5 py-1.5 text-slate-500 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors inline-flex items-center">
+              <Icon name="download" size={14}/>
+            </button>
+          </div>
+        </div>
         {/* 雲端同步 (暫時隱藏)
         <div className="grid grid-cols-2 gap-1 mb-2">
           <button onClick={onCloudPush} className="px-2 py-1 bg-sky-600 hover:bg-sky-700 text-white text-[10px] font-bold rounded-lg shadow-sm" title="把所有本地專案推送到後端雲端">☁️↑ 上傳雲端</button>
@@ -8484,22 +9274,22 @@ function ProjectManager({projects, currentId, dirty, projectName, setProjectName
             overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:99999;font-family:sans-serif;";
             overlay.innerHTML = `
               <div style="background:#fff;padding:24px;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.2);min-width:420px;max-width:90vw;display:flex;flex-direction:column;gap:16px;">
-                <div style="font-size:15px;font-weight:700;color:#111;">新增專案</div>
+                <div style="font-size:15px;font-weight:700;color:#262420;">新增專案</div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                  <button id="np-blank" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 16px;background:#f8fafc;border:2px solid #e2e8f0;border-radius:12px;cursor:pointer;transition:all 0.15s;font-family:inherit;" onmouseover="this.style.background='#f0f9ff';this.style.borderColor='#0284c7';" onmouseout="this.style.background='#f8fafc';this.style.borderColor='#e2e8f0';">
+                  <button id="np-blank" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 16px;background:#F5F3EE;border:2px solid #E2DFD7;border-radius:12px;cursor:pointer;transition:all 0.15s;font-family:inherit;" onmouseover="this.style.background='#F4F6F2';this.style.borderColor='#5E7350';" onmouseout="this.style.background='#F5F3EE';this.style.borderColor='#E2DFD7';">
                     <div style="font-size:32px;line-height:1;">✨</div>
-                    <div style="font-size:13px;font-weight:700;color:#0f172a;">從空白開始</div>
-                    <div style="font-size:11px;color:#64748b;text-align:center;line-height:1.4;">建立一份全新的空白專案</div>
+                    <div style="font-size:13px;font-weight:700;color:#262420;">從空白開始</div>
+                    <div style="font-size:11px;color:#807D73;text-align:center;line-height:1.4;">建立一份全新的空白專案</div>
                   </button>
-                  <label id="np-import" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 16px;background:#f8fafc;border:2px solid #e2e8f0;border-radius:12px;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='#f0f9ff';this.style.borderColor='#0284c7';" onmouseout="this.style.background='#f8fafc';this.style.borderColor='#e2e8f0';">
+                  <label id="np-import" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 16px;background:#F5F3EE;border:2px solid #E2DFD7;border-radius:12px;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='#F4F6F2';this.style.borderColor='#5E7350';" onmouseout="this.style.background='#F5F3EE';this.style.borderColor='#E2DFD7';">
                     <div style="font-size:32px;line-height:1;">📥</div>
-                    <div style="font-size:13px;font-weight:700;color:#0f172a;">從 JSON 匯入</div>
-                    <div style="font-size:11px;color:#64748b;text-align:center;line-height:1.4;">讀取備份檔還原專案</div>
+                    <div style="font-size:13px;font-weight:700;color:#262420;">從 JSON 匯入</div>
+                    <div style="font-size:11px;color:#807D73;text-align:center;line-height:1.4;">讀取備份檔還原專案</div>
                     <input id="np-file" type="file" accept=".json" style="display:none;"/>
                   </label>
                 </div>
                 <div style="display:flex;justify-content:flex-end;">
-                  <button id="np-cancel" style="padding:6px 14px;border:1px solid #cbd5e1;background:#fff;color:#475569;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">取消</button>
+                  <button id="np-cancel" style="padding:6px 14px;border:1px solid #CCC8BD;background:#fff;color:#54524A;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">取消</button>
                 </div>
               </div>`;
             document.body.appendChild(overlay);
@@ -8510,7 +9300,7 @@ function ProjectManager({projects, currentId, dirty, projectName, setProjectName
             overlay.querySelector("#np-file").onchange = (e) => { cleanup(); onImport(e); };
             overlay.onclick = (e) => { if (e.target === overlay) cleanup(); };
             blankBtn.focus();
-          }} title="新增專案" className="text-[11px] text-sky-600 hover:text-sky-800 hover:bg-sky-50 rounded px-1.5 py-0.5 font-bold">＋ 新增</button>
+          }} title="新增專案" className="text-[11px] text-emerald-600 hover:text-emerald-800 hover:bg-sky-50 rounded px-1.5 py-0.5 font-bold">＋ 新增</button>
         </div>
         {listExpanded && projects.length > 0 && (
           <>
@@ -8535,12 +9325,12 @@ function ProjectManager({projects, currentId, dirty, projectName, setProjectName
                 }
                 return (
                   <div key={pr.id} className={"flex items-center gap-1 p-1.5 rounded-lg border transition-colors "+(active?"border-sky-400 bg-sky-100":"border-slate-200 bg-slate-50/60 hover:bg-slate-100")}>
-                    <button onClick={()=>onLoad(pr.id)} className={"flex-1 text-left text-[11px] truncate "+(active?"font-bold text-sky-800":"font-semibold text-slate-700")} title={pr.name}>
+                    <button onClick={()=>onLoad(pr.id)} className={"flex-1 text-left text-[11px] truncate "+(active?"font-bold text-emerald-800":"font-semibold text-slate-700")} title={pr.name}>
                       {active && "▸ "}{pr.name}
                       {ds && <div className="text-[8px] text-slate-400 font-normal">{ds}</div>}
                     </button>
                     <button onClick={()=>onExportExcel(pr)} className="text-slate-400 hover:text-amber-600 px-1 inline-flex items-center" title="匯出此專案 Excel"><Icon name="bar-chart-3" size={12}/></button>
-                    <button onClick={()=>startRename(pr)} className="text-slate-400 hover:text-sky-500 px-1" title="重新命名"><Icon name="pencil" size={12}/></button>
+                    <button onClick={()=>startRename(pr)} className="text-slate-400 hover:text-emerald-500 px-1" title="重新命名"><Icon name="pencil" size={12}/></button>
                     <button onClick={()=>onDelete(pr.id, pr.name)} className="text-slate-400 hover:text-rose-500 text-lg leading-none px-1" title="刪除">×</button>
                   </div>
                 );
@@ -8724,7 +9514,60 @@ function MainApp({session, onLogout}) {
       if (cb.lvtOrigVal == null) cb.lvtOrigVal = 0;              // 原規定地價(元/m²)
       if (cb.lvtLandType == null) cb.lvtLandType = "1";          // 土地類別代碼
       if (cb.lvtTaxResult == null) cb.lvtTaxResult = null;       // API 回傳土增稅(萬), null=未查
+      // 自 v66: 公保地容積移轉
+      if (!cb.volTransfer || typeof cb.volTransfer !== "object") {
+        cb.volTransfer = { enabled: false, includeInT8: false, pricePct: 200, announcedValueOverride: null, extraCosts: [], extraRevenues: [] };
+      } else {
+        if (cb.volTransfer.enabled == null) cb.volTransfer.enabled = false;
+        if (cb.volTransfer.includeInT8 == null) cb.volTransfer.includeInT8 = false;
+        if (cb.volTransfer.pricePct == null) cb.volTransfer.pricePct = 200;
+        if (cb.volTransfer.announcedValueOverride === undefined) cb.volTransfer.announcedValueOverride = null;
+        if (!Array.isArray(cb.volTransfer.extraCosts)) cb.volTransfer.extraCosts = [];
+        if (!Array.isArray(cb.volTransfer.extraRevenues)) cb.volTransfer.extraRevenues = [];
+      }
     }
+    // 自 v67: 交屋日 (預估完工/移轉所有權日)
+    if (!d.handoverDate || typeof d.handoverDate !== "object") {
+      d.handoverDate = { year: 0, month: 0 };
+    }
+    // 自 v64: salesMix/parkingMix 補欄位 (舊專案: 100% 住宅 + 全平面車位)
+    if (!d.salesMix || typeof d.salesMix !== "object") {
+      d.salesMix = {
+        res:    { mode: "ratio", ratio: 1.0, area: 0, uP: Number(d.uP) || 0 },
+        retail: { mode: "ratio", ratio: 0,   area: 0, uP: 0 },
+        office: { mode: "ratio", ratio: 0,   area: 0, uP: 0 },
+      };
+    } else {
+      if (!d.salesMix.res)    d.salesMix.res    = { mode: "ratio", ratio: 1.0, area: 0, uP: Number(d.uP) || 0 };
+      if (!d.salesMix.retail) d.salesMix.retail = { mode: "ratio", ratio: 0,   area: 0, uP: 0 };
+      if (!d.salesMix.office) d.salesMix.office = { mode: "ratio", ratio: 0,   area: 0, uP: 0 };
+    }
+    if (!d.parkingMix || typeof d.parkingMix !== "object") {
+      d.parkingMix = {
+        flat:       { count: Number(d.parking) || 0, uP: Number(d.pP) || 0 },
+        mechanical: { count: 0, uP: 0 },
+      };
+    } else {
+      if (!d.parkingMix.flat)       d.parkingMix.flat       = { count: Number(d.parking) || 0, uP: Number(d.pP) || 0 };
+      if (!d.parkingMix.mechanical) d.parkingMix.mechanical = { count: 0, uP: 0 };
+    }
+    // 自 v68: 載入時一次性同步 p.cC = 等效每坪 (依目前 ci.co.mode)
+    //         讓 fixed / pctSales 模式存的專案載入後 T2/T4 顯示正確
+    try {
+      const _co = d.costItems && d.costItems.co;
+      if (_co) {
+        const _dr = calcDerived(d);
+        if (_dr.totalArea > 0) {
+          const _ctx = { sales: _dr.ts || 0, totalArea: _dr.totalArea, totalCost: 0 };
+          const _amount = calcCostItemValue(_co, _ctx);
+          const _newCC = _amount / _dr.totalArea;
+          if (_newCC > 0) {
+            d.cC = +_newCC.toFixed(2);
+            d._cCLastSyncArea = _dr.totalArea;
+          }
+        }
+      }
+    } catch (e) { /* 容錯: 不阻擋載入 */ }
     return d;
   };
 
@@ -8848,8 +9691,8 @@ function MainApp({session, onLogout}) {
       ? p.owners.find(o => ("owner_"+o.id) === myRole)
       : null;
     return myOwner
-      ? cS(p, dr, p.uP, p.cC, "o", myOwner.ratio)
-      : cS(p, dr, p.uP, p.cC, "b", 0);
+      ? cS(p, dr, dr.weightedUP, p.cC, "o", myOwner.ratio)
+      : cS(p, dr, dr.weightedUP, p.cC, "b", 0);
   }, [p]);
   // snap: 完整投資綜合報告快照 (依分析模式), 給頂部 ROI 用
   const baseSnap = useMemo(() => calcT8Snapshot(p, dr), [p]);
@@ -8860,97 +9703,48 @@ function MainApp({session, onLogout}) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 via-sky-50/20 to-slate-100" style={{fontFamily:"'Noto Sans TC',system-ui,sans-serif"}}>
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 text-white shadow-2xl">
-        <div className="max-w-[1440px] mx-auto px-4 py-3 flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-50 bg-slate-50/95 backdrop-blur border-b border-slate-200 text-slate-900">
+        <div className="max-w-[1440px] mx-auto px-5 py-3 flex items-center justify-between gap-4">
+          {/* Left: Logo + 問候 */}
           <div className="flex items-center gap-3">
-            <button className="lg:hidden p-1" onClick={()=>sMM(!mm)}><svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-sky-400 flex items-center justify-center font-black text-sm shadow-lg shrink-0">智</div>
-            <div className="hidden sm:block"><div className="font-bold text-sm">台灣建設開發智腦</div><div className="text-[9px] text-sky-300/80 tracking-[0.2em]">TAIWAN DIGITAL CONSTRUCTION BRAIN</div></div>
-          </div>
-          <div className="hidden md:flex items-center gap-2">
-            {/* 目前專案 + 狀態點 + 可編輯名稱 + 儲存 + 匯出 */}
-            <div className="flex items-center gap-2">
-              <div className="text-right">
-                <div className="text-[10px] text-sky-300/70 flex items-center gap-1.5 justify-end">
-                  <span>目前專案</span>
-                  <span title={(currentId && !dirty) ? "已儲存" : "未儲存"}
-                    className={"shrink-0 w-1.5 h-1.5 rounded-full " + ((currentId && !dirty) ? "bg-emerald-400" : "bg-amber-400")}/>
-                </div>
-                <input type="text" value={projectName}
-                  onChange={e=>setProjectName(e.target.value)}
-                  placeholder="未命名專案"
-                  className="font-bold text-sm bg-transparent border-0 text-right text-white placeholder-sky-400 focus:outline-none focus:bg-sky-900/40 focus:ring-1 focus:ring-sky-500 rounded px-1 max-w-[180px] min-w-0"/>
-              </div>
-              <button title="儲存 (⌘/Ctrl + S)" onClick={saveCurrent}
-                className="shrink-0 p-1.5 text-sky-200 hover:text-white hover:bg-sky-700/40 rounded-lg transition-colors">
-                <Icon name="save" size={16}/>
-              </button>
-              <button title="匯出 (Excel / JSON)" onClick={() => {
-                const overlay = document.createElement("div");
-                overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:99999;font-family:sans-serif;";
-                overlay.innerHTML = `
-                  <div style="background:#fff;padding:20px 24px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.2);min-width:280px;display:flex;flex-direction:column;gap:14px;">
-                    <div style="font-size:14px;font-weight:700;color:#111;">匯出本案</div>
-                    <label style="font-size:12px;color:#475569;display:flex;flex-direction:column;gap:6px;">
-                      請選擇匯出格式
-                      <select id="export-fmt-select" style="padding:6px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#fff;">
-                        <option value="excel">Excel (.xlsx) — 完整數據</option>
-                        <option value="json">JSON — 專案備份</option>
-                      </select>
-                    </label>
-                    <div style="display:flex;justify-content:flex-end;gap:8px;">
-                      <button id="export-fmt-cancel" style="padding:6px 14px;border:1px solid #cbd5e1;background:#fff;color:#475569;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">取消</button>
-                      <button id="export-fmt-ok" style="padding:6px 14px;background:#0284c7;color:#fff;border:0;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">匯出</button>
-                    </div>
-                  </div>`;
-                document.body.appendChild(overlay);
-                const cleanup = () => overlay.remove();
-                overlay.querySelector("#export-fmt-cancel").onclick = cleanup;
-                overlay.querySelector("#export-fmt-ok").onclick = () => {
-                  const fmt = overlay.querySelector("#export-fmt-select").value;
-                  cleanup();
-                  if (fmt === "excel") exportExcel(); else exportProjects();
-                };
-                overlay.onclick = (e) => { if (e.target === overlay) cleanup(); };
-              }} className="shrink-0 p-1.5 text-sky-200 hover:text-white hover:bg-sky-700/40 rounded-lg transition-colors">
-                <Icon name="download" size={16}/>
-              </button>
+            <button className="lg:hidden p-1 text-slate-700" onClick={()=>sMM(!mm)}><svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+            <div className="w-11 h-11 rounded-2xl bg-logo-leasing bg-center bg-cover flex items-center justify-center font-black text-base shrink-0"></div>
+            <div className="hidden sm:block">
+              <div className="font-bold text-base text-slate-900">Hello, {session.userId}!</div>
+              <div className="text-[11px] text-slate-500">Explore information and activity about your projects.</div>
             </div>
-            <div className="h-8 w-px bg-sky-700/50"/>
-            <div className="flex gap-4">
-              {[{l:"總銷",v:fmt(dr.ts),c:"text-sky-300"},{l:"淨利",v:fmt(base.pat),c:base.pat>0?"text-emerald-300":"text-rose-300"},{l:"淨利率",v:pct(base.nm),c:"text-amber-300"},{l:"ROI",v:headerROI,c:"text-violet-300"}].map((m,i)=>(
-                <div key={i} className="text-center"><div className="text-[9px] text-sky-300/60">{m.l}</div><div className={"font-bold text-sm font-mono "+m.c}>{m.v}</div></div>
+          </div>
+          {/* Right: 目前專案 + KPI + 設定 + 帳號 */}
+          <div className="hidden md:flex items-center gap-3">
+            <div className="flex gap-5">
+              {[{l:"總銷",v:fmt(dr.ts)},{l:"淨利",v:fmt(base.pat),c:base.pat>0?"text-emerald-700":"text-rose-600"},{l:"淨利率",v:pct(base.nm)},{l:"ROI",v:headerROI}].map((m,i)=>(
+                <div key={i} className="text-center">
+                  <div className="text-[9px] text-slate-500 uppercase tracking-wide">{m.l}</div>
+                  <div className={"font-bold text-sm font-mono "+(m.c||"text-slate-900")}>{m.v}</div>
+                </div>
               ))}
             </div>
-            <div className="h-8 w-px bg-sky-700/50"/>
+            <div className="h-8 w-px bg-slate-300"/>
             {/* 系統設定 */}
             <button onClick={openSystemSettings} title="系統資料維護"
-              className="p-1.5 text-sky-200 hover:text-white hover:bg-sky-700/40 rounded-lg transition-colors">
+              className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200/70 rounded-xl transition-colors">
               <Icon name="settings" size={18}/>
             </button>
-            {/* 使用者資訊 + 登出 (緊鄰, 視為同一帳號區塊) */}
-            <div className="flex items-center gap-2">
-              <div className="text-right">
-                <div className="text-[9px] text-sky-300/60">USERID</div>
-                <div className="text-xs font-bold text-sky-200 font-mono max-w-[180px] truncate cursor-pointer" title={"點擊複製 USERID: "+session.userId}
-                  onClick={() => { navigator.clipboard?.writeText(session.userId); }}>
-                  {session.userId}
-                </div>
-              </div>
-              <button onClick={() => { if (window.confirm("確定要登出？\n未儲存的變更會遺失 (但已同步到雲端的資料仍可用同 USERID 取回)。")) onLogout(); }}
-                className="px-3 py-1.5 text-xs font-bold text-rose-200 hover:text-white hover:bg-rose-600/40 rounded-lg border border-rose-400/30 transition-colors">
-                登出
-              </button>
-            </div>
+            {/* 登出 */}
+            <button onClick={() => { if (window.confirm("確定要登出？\n未儲存的變更會遺失 (但已同步到雲端的資料仍可用同 USERID 取回)。")) onLogout(); }}
+              title="登出"
+              className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors">
+              <Icon name="log-out" size={16}/>
+            </button>
           </div>
           {/* 行動版簡易使用者狀態 */}
           <div className="md:hidden flex items-center gap-2">
-            <button onClick={openSystemSettings} title="系統資料維護" className="p-1 text-sky-200">
+            <button onClick={openSystemSettings} title="系統資料維護" className="p-1 text-slate-500">
               <Icon name="settings" size={16}/>
             </button>
-            <span className="text-[10px] text-sky-200 font-mono max-w-[100px] truncate">{session.userId}</span>
+            <span className="text-[10px] text-slate-600 font-mono max-w-[100px] truncate">{session.userId}</span>
             <button onClick={() => { if (window.confirm("登出？")) onLogout(); }}
-              className="px-2 py-1 text-[10px] text-rose-200 border border-rose-400/30 rounded">登出</button>
+              className="px-2 py-1 text-[10px] text-rose-600 border border-rose-300 rounded">登出</button>
           </div>
         </div>
       </header>
@@ -9036,7 +9830,7 @@ function MainApp({session, onLogout}) {
               {TABS.map(t=>(
                 <button key={t.k} onClick={()=>{setTab(t.k);sMM(false)}} className={"w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all "+(tab===t.k?"bg-sky-700 text-white shadow-lg font-bold":"text-slate-600 hover:bg-white hover:shadow-sm")}>
                   <Icon name={t.i} size={18}/>
-                  <div className="text-left"><div>{t.l}</div><div className={"text-[10px] "+(tab===t.k?"text-sky-200":"text-slate-400")}>{t.d}</div></div>
+                  <div className="text-left"><div>{t.l}</div><div className={"text-[10px] "+(tab===t.k?"text-emerald-200":"text-slate-400")}>{t.d}</div></div>
                 </button>
               ))}
             </div>
@@ -9050,7 +9844,7 @@ function MainApp({session, onLogout}) {
                   const zoneStr = zones.length === 0 ? "未設定"
                     : zones.length === 1 ? zones[0] + " " + (dr.baseFAR*100).toFixed(0) + "%"
                     : zones.join("、") + " (加權 " + (dr.baseFAR*100).toFixed(0) + "%)";
-                  return [["分區", zoneStr], ["面積", fmt(dr.totalArea)+"坪"], ["售價", p.uP+"萬"], ["造價", p.cC+"萬"]].map(([l,v],i)=>(
+                  return [["分區", zoneStr], ["面積", fmt(dr.totalArea)+"坪"], ["售價", fmt2(p.uP)+"萬"], ["造價", fmt2(p.cC)+"萬"]].map(([l,v],i)=>(
                     <div key={i} className="flex justify-between gap-2"><span className="text-slate-500 whitespace-nowrap">{l}</span><span className="font-bold text-right break-words">{v}</span></div>
                   ));
                 })()}
