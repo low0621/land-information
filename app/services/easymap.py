@@ -24,9 +24,12 @@ TOKEN_PATTERN = re.compile(
 )
 NUMBER_PATTERN = re.compile(r"[-+]?\d*\.?\d+")
 
+# (連線, 讀取) 秒; 上游 easymap 偶爾會卡住, 加 timeout 避免拖滿 threadpool
+HTTP_TIMEOUT = (5, 30)
+
 
 def fetch_token(session: requests.Session) -> str:
-    resp = session.post(TOKEN_URL, verify=False)
+    resp = session.post(TOKEN_URL, verify=False, timeout=HTTP_TIMEOUT)
     resp.raise_for_status()
     match = TOKEN_PATTERN.search(resp.text)
     if not match:
@@ -52,17 +55,10 @@ def fetch_land_detail(
         "struts.token.name": "token",
         "token": token,
     }
-    resp = session.post(DETAIL_URL, data=payload, verify=False)
+    resp = session.post(DETAIL_URL, data=payload, verify=False, timeout=HTTP_TIMEOUT)
     resp.raise_for_status()
-    detail = parse_land_detail_html(resp.text)
-    # 一併抓地號中心點座標（WGS84 → TWD97）後合併進回傳
-    lng, lat = fetch_land_location(
-        office=office, sect_no=sect_no, land_no=land_no)
-    twd = wgs2twd(lat=lat, lng=lng)
-    detail["twd_x"] = twd["x"]
-    detail["twd_y"] = twd["y"]
-    detail["address"] = wgs2address(lat=lat, lng=lng)
-    return detail
+    # 只負責地籍 HTML 資料（面積 / 公告現值 / 公告地價）；座標與地址見 fetch_land_geo
+    return parse_land_detail_html(resp.text)
 
 
 def parse_land_detail_html(html: str) -> dict[str, float]:
@@ -98,7 +94,7 @@ def _post_with_token(url: str, extra: dict[str, str] | None = None):
     }
     if extra:
         payload.update(extra)
-    resp = session.post(url, data=payload, verify=False)
+    resp = session.post(url, data=payload, verify=False, timeout=HTTP_TIMEOUT)
     resp.raise_for_status()
     return resp.json()
 
@@ -131,6 +127,21 @@ def fetch_land_location(office: str, sect_no: str, land_no: str) -> tuple[float,
         {"office": office, "sectNo": sect_no, "landNo": land_no},
     )
     return float(data["X"]), float(data["Y"])
+
+
+def fetch_land_geo(office: str, sect_no: str, land_no: str) -> dict[str, float | str]:
+    """抓地號中心點座標（WGS84 → TWD97）與反向地理編碼地址。
+
+    回傳 {twd_x, twd_y, address}；房價估值（query_house_price）專用。
+    """
+    lng, lat = fetch_land_location(
+        office=office, sect_no=sect_no, land_no=land_no)
+    twd = wgs2twd(lat=lat, lng=lng)
+    return {
+        "twd_x": twd["x"],
+        "twd_y": twd["y"],
+        "address": wgs2address(lat=lat, lng=lng),
+    }
 
 
 def resolve_codes(county: str, district: str, section_no: str) -> tuple[str, str, str, str]:

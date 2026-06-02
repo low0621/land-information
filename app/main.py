@@ -1,8 +1,11 @@
 import csv
 import io
+import os
 import uuid as uuid_lib
+from contextlib import asynccontextmanager
 from fractions import Fraction
 
+import anyio.to_thread
 import xlrd
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,7 +29,7 @@ from app.schemas import (
     ZoningUploadResponse,
 )
 from app.seed import init_db
-from app.services.easymap import fetch_land_detail, resolve_codes
+from app.services.easymap import fetch_land_detail, fetch_land_geo, resolve_codes
 from app.services.etax import fetch_etax_calculate
 from app.services.mortgage import fetch_house_price
 
@@ -40,7 +43,19 @@ ZONING_CSV_HEADER_MAP = {
 }
 ZONING_CSV_COLUMNS = list(ZONING_CSV_HEADER_MAP.keys())
 
-app = FastAPI(title="Land Information Backend")
+@asynccontextmanager
+async def lifespan(app: FastAPI):  # noqa: ARG001 — FastAPI 規定的簽名
+    # startup
+    init_db()
+    # 擴大 anyio threadpool: FastAPI 把同步 def handler 丟到這跑, 預設只有 40 條,
+    # 上游 (easymap / etax / mortgage) 慢或卡住時容易吃滿
+    threadpool_size = int(os.environ.get("THREADPOOL_SIZE", "200"))
+    anyio.to_thread.current_default_thread_limiter().total_tokens = threadpool_size
+    yield
+    # shutdown (目前無需特別處理)
+
+
+app = FastAPI(title="Land Information Backend", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -49,11 +64,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-def on_startup() -> None:
-    init_db()
 
 
 @app.get(
@@ -266,14 +276,12 @@ def query_parcel(payload: ParcelQuery, db: Session = Depends(get_db)) -> ParcelR
 )
 def query_house_price(payload: HousePriceQuery) -> HousePriceResponse:
     try:
-        city_code, town_code, office, section_no = resolve_codes(
+        _city_code, _town_code, office, section_no = resolve_codes(
             county=payload.county,
             district=payload.district,
             section_no=payload.section_no,
         )
-        detail = fetch_land_detail(
-            city_code=city_code,
-            town_code=town_code,
+        geo = fetch_land_geo(
             office=office,
             sect_no=section_no,
             land_no=payload.land_no,
@@ -288,11 +296,11 @@ def query_house_price(payload: HousePriceQuery) -> HousePriceResponse:
 
     try:
         price_result = fetch_house_price(
-            twd_x=detail["twd_x"],
-            twd_y=detail["twd_y"],
+            twd_x=geo["twd_x"],
+            twd_y=geo["twd_y"],
             county=payload.county,
             district=payload.district,
-            address=detail.get("address", "") or "",
+            address=geo.get("address", "") or "",
             total_floors=payload.total_floors,
         )
     except Exception as e:
