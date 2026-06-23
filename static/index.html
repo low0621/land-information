@@ -123,6 +123,38 @@ input[type=range]:disabled{opacity:.5;cursor:not-allowed}
 <div id="root"></div>
 <script type="text/babel">
 const {useState, useMemo, useEffect} = React;
+
+// 地號工具 (全站共用)
+// parseLandNo: 解析成 { main: 母號, sub: 子號 } (數字字串, 未補零)
+//   有分隔符 → 直接切母/子; 無分隔符且 >4 碼 → 後 4 碼為子號 (完整地號 4+4 結構)
+//   例 "0123-0045"→{0123,0045}, "05910000"→{0591,0000}, "591"→{591,""}
+const parseLandNo = (raw) => {
+  const parts = (raw || "").toString().split(/[^0-9]+/).filter(Boolean);
+  if (parts.length === 0) return { main: "", sub: "" };
+  if (parts.length >= 2) return { main: parts[0], sub: parts[1] };
+  const d = parts[0];
+  if (d.length > 4) return { main: d.slice(0, d.length - 4), sub: d.slice(-4) };
+  return { main: d, sub: "" };
+};
+// cleanLandNo: 顯示用 — 母號/子號各去前導 0, 子號全 0 則省略
+//   例 "0123-0000"→"123", "0123-0045"→"123-45", "05910000"→"591"
+const cleanLandNo = (raw) => {
+  const { main, sub } = parseLandNo(raw);
+  if (!main) return "";
+  const strip = (x) => x.replace(/^0+/, "") || "0";
+  const m = strip(main);
+  const s = sub ? strip(sub) : "";
+  return (!s || s === "0") ? m : m + "-" + s;
+};
+// toCanonicalLandNo: 比對 / 送後端用 — 母號-子號各補滿 4 位
+//   例 "123"→"0123-0000", "123-45"→"0123-0045", "05910000"→"0591-0000"
+const toCanonicalLandNo = (raw) => {
+  const { main, sub } = parseLandNo(raw);
+  if (!main) return "";
+  const pad = (x) => (x.replace(/^0+/, "") || "0").padStart(4, "0");
+  return pad(main) + "-" + (sub ? pad(sub) : "0000");
+};
+
 const fmt = (n, d=0) => {
   if (n == null || isNaN(n)) return "—";
   return n.toLocaleString("zh-TW", {minimumFractionDigits:d, maximumFractionDigits:d});
@@ -5398,7 +5430,7 @@ function T1({p, sP}) {
                     urban_plan: land.urbanPlan || ((land.city || p.city || "新北市") + "都市計畫"),
                     land_use_zone: land.zone || p.zone || "第三種住宅區",
                     section_no: land.sec,
-                    land_no: land.num,
+                    land_no: toCanonicalLandNo(land.num),
                     owner: ownerName,
                     share: share
                   };
@@ -5576,7 +5608,7 @@ function T1({p, sP}) {
                   try {
                     apiData = await apiClient.queryParcel({
                       county: city, district, urban_plan: urbanPlan, land_use_zone: zone,
-                      section_no: sec, land_no: num, owner: "", share: 1
+                      section_no: sec, land_no: toCanonicalLandNo(num), owner: "", share: 1
                     });
                   } catch (e2) {
                     errors.push(`第 ${i+2} 列 (${sec}/${num}): API 查詢失敗 - ${e2.message}`);
@@ -5862,7 +5894,7 @@ function T1({p, sP}) {
                       const ownerName = row["所有權人"] || row["所有權人名"] || "";
                       let shareRaw = (row["持分"] || "").toString().trim();
                       if (!sec || !num) { errors.push(`第 ${i+2} 列: 地段或地號為空, 略過`); continue; }
-                      const land = p.lands.find(l => l.sec === sec && l.num === num);
+                      const land = p.lands.find(l => l.sec === sec && toCanonicalLandNo(l.num) === toCanonicalLandNo(num));
                       if (!land) { errors.push(`第 ${i+2} 列 (${sec}/${num}): 表 1 找不到對應地號`); }
                       let share;
                       if (shareRaw.endsWith("%")) share = parseFloat(shareRaw) / 100;
@@ -5898,11 +5930,13 @@ function T1({p, sP}) {
                       for (let i = 0; i < items.length; i++) {
                         const it = items[i];
                         const sec = (it.section || "").toString().trim();
-                        const num = (it.land_no || "").toString().replace(/[^0-9]/g, "");  // 地號清除 "-" 等非數字, 只留純數字
+                        const num = cleanLandNo(it.land_no);  // 地號: 母號/子號各自去前導 0, 子號全 0 省略
                         const ownerName = (it.owner || "").toString().trim();
                         const share = parseFloat(it.share);  // 後端已換算為小數
                         if (!sec || !num) { errors.push(`第 ${i+1} 筆: 地段或地號為空, 略過`); continue; }
-                        const land = p.lands.find(l => l.sec === sec && l.num === num);
+                        console.log(p.lands)
+                        console.log(it)
+                        const land = p.lands.find(l => l.sec === sec && toCanonicalLandNo(l.num) === toCanonicalLandNo(it.land_no));
                         if (!land) { errors.push(`第 ${i+1} 筆 (${sec}/${num}): 表 1 找不到對應地號`); }
                         if (isNaN(share) || share <= 0) { errors.push(`第 ${i+1} 筆: 持分格式錯誤 (${it.share})`); continue; }
                         const ownerId = findOrCreateOwner(ownerName);
@@ -6257,7 +6291,7 @@ function T1({p, sP}) {
                         document.body.appendChild(priceLoadingEl);
                         try {
                           const r = await apiClient.queryHousePrice({
-                            county, district, section_no: sectionNo, land_no: landNo, total_floors: totalFloors
+                            county, district, section_no: sectionNo, land_no: toCanonicalLandNo(landNo), total_floors: totalFloors
                           });
                           priceLoadingEl.remove();
                           const wanPerPing = r.unit_price;
