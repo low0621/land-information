@@ -21,6 +21,7 @@ from app.schemas import (
     LandTaxResponse,
     ParcelQuery,
     ParcelResponse,
+    PdfAnalysisResponse,
     PriceIndexUploadResponse,
     ProjectCreate,
     ProjectDelete,
@@ -32,6 +33,7 @@ from app.seed import init_db
 from app.services.easymap import fetch_land_detail, fetch_land_geo, resolve_codes
 from app.services.etax import fetch_etax_calculate
 from app.services.mortgage import fetch_house_price
+from app.services.pdf_analysis import analyze_pdf
 
 ZONING_CSV_HEADER_MAP = {
     "縣市": "county",
@@ -581,6 +583,50 @@ async def upload_price_index(
         skipped=skipped,
         errors=errors,
     )
+
+
+@app.post(
+    "/api/pdf-analysis",
+    response_model=PdfAnalysisResponse,
+    summary="上傳 PDF 並以 OpenAI 解析為結構化資料",
+    description=(
+        "上傳一份土地登記謄本／權狀 PDF，後端送至 OpenAI 做檔案分析並回傳結構化結果。\n\n"
+        "**Form 參數**：\n"
+        "- `file` (UploadFile)：`.pdf` 檔\n\n"
+        "**處理邏輯**：\n"
+        "- 經 OpenAI Files API 上傳後，以 Responses API（structured output）抽取欄位\n"
+        "- 會逐頁解析，一份 PDF 可能回傳多筆地號\n"
+        "- 分析完即刪除 OpenAI 端的暫存檔\n\n"
+        "**回應**：`{ items: [...] }`，每筆 `item` 欄位：\n"
+        "- `district` (str)：行政區\n"
+        "- `section` (str)：地段名稱\n"
+        "- `land_no` (str)：地號\n"
+        "- `owner` (str)：所有權人\n"
+        "- `share` (float)：權利範圍（持分），小數表示\n"
+        "- `prev_price` (float)：前次移轉現值\n\n"
+        "**錯誤回應**：\n"
+        "- `400`：副檔名非 `.pdf` 或檔案內容為空\n"
+        "- `502`：OpenAI 服務呼叫或解析失敗"
+    ),
+)
+async def analyze_pdf_endpoint(
+    file: UploadFile = File(..., description="要分析的 PDF 檔"),
+) -> PdfAnalysisResponse:
+    if not file.filename or not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="請上傳 .pdf 檔")
+
+    content = await file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="檔案內容為空")
+
+    # OpenAI SDK 為同步阻塞，丟到 threadpool 避免卡住事件迴圈
+    try:
+        result = await anyio.to_thread.run_sync(analyze_pdf, content, file.filename)
+    except Exception as e:
+        print("openai pdf analysis error: ", e)
+        raise HTTPException(status_code=502, detail=f"PDF 分析失敗: {e}")
+
+    return result
 
 
 # 靜態網站掛在 "/"，要放在所有 API 路由之後
