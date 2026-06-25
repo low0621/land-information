@@ -44,3 +44,7 @@ htmlcov/
 # Env files
 .env
 .env.local
+
+# Static files
+static/*.html
+!static/index.html

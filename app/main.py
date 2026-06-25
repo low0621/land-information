@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
+from app.crypto import decrypt_json
 from app.database import get_db
 from app.models import PriceIndex, Project, Zoning
 from app.schemas import (
@@ -112,8 +113,19 @@ def create_project(
     payload: ProjectCreate,
     db: Session = Depends(get_db),
 ) -> ProjectResponse:
+    # data / data_enc 擇一：有加密就先解密還原成原始 JSON
+    if payload.data_enc is not None:
+        try:
+            data = decrypt_json(payload.data_enc)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=f"data_enc 解密失敗: {e}")
+    elif payload.data is not None:
+        data = payload.data
+    else:
+        raise HTTPException(status_code=422, detail="必須提供 data 或 data_enc 其一")
+
     pid = str(uuid_lib.uuid4())
-    project = Project(pid=pid, user_id=payload.user_id, data=payload.data)
+    project = Project(pid=pid, user_id=payload.user_id, data=data)
     db.add(project)
     db.commit()
     db.refresh(project)

@@ -11,7 +11,11 @@ class ProjectResponse(BaseModel):
 
 class ProjectCreate(BaseModel):
     user_id: str = Field(..., description="使用者 id")
-    data: dict[str, Any] = Field(..., description="專案資料（任意 JSON 物件）")
+    # data / data_enc 擇一提供：明文 JSON，或 AES-GCM 加密後的 base64 字串
+    data: dict[str, Any] | None = Field(
+        None, description="專案資料（任意 JSON 物件）；與 data_enc 擇一")
+    data_enc: str | None = Field(
+        None, description="AES-GCM 加密後的專案資料 base64；與 data 擇一，後端解密還原")
 
 
 class ProjectUpdate(BaseModel):
