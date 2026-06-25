@@ -152,6 +152,17 @@ def update_project(
     payload: ProjectUpdate,
     db: Session = Depends(get_db),
 ) -> ProjectResponse:
+    # data / data_enc 擇一：有加密就先解密還原成原始 JSON
+    if payload.data_enc is not None:
+        try:
+            data = decrypt_json(payload.data_enc)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=f"data_enc 解密失敗: {e}")
+    elif payload.data is not None:
+        data = payload.data
+    else:
+        raise HTTPException(status_code=422, detail="必須提供 data 或 data_enc 其一")
+
     project = db.query(Project).filter(Project.pid == payload.pid).first()
     if project is None:
         raise HTTPException(status_code=404, detail="project not found")
@@ -159,7 +170,7 @@ def update_project(
         raise HTTPException(
             status_code=403, detail="user_id does not match project owner")
 
-    project.data = payload.data
+    project.data = data
     db.commit()
     db.refresh(project)
     return ProjectResponse(pid=project.pid, user_id=project.user_id, data=project.data)
