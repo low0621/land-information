@@ -17,6 +17,23 @@ def _aes_key() -> bytes:
     return hashlib.sha256(AES_PASSPHRASE.encode("utf-8")).digest()
 
 
+def _decrypt_raw(raw: bytes) -> bytes:
+    """解密 iv(12 bytes) ‖ ciphertext+tag 的位元組，回傳明文 bytes。"""
+    if len(raw) <= IV_LEN:
+        raise ValueError("密文長度不足（缺少 iv 或密文）")
+    iv, ciphertext = raw[:IV_LEN], raw[IV_LEN:]
+    try:
+        return AESGCM(_aes_key()).decrypt(iv, ciphertext, None)
+    except Exception as e:
+        # 金鑰不符 / 內容被竄改 / tag 驗證失敗都會到這
+        raise ValueError(f"AES 解密失敗: {e}")
+
+
+def decrypt_file_bytes(raw: bytes) -> bytes:
+    """解密 multipart 上傳的二進位密文（iv ‖ ciphertext+tag），回傳原始檔案 bytes。"""
+    return _decrypt_raw(raw)
+
+
 def decrypt_json(blob_b64: str) -> Any:
     """解密前端送來的 AES-GCM 密文，回傳原始 JSON 物件。
 
@@ -28,16 +45,7 @@ def decrypt_json(blob_b64: str) -> Any:
     except Exception as e:
         raise ValueError(f"data_enc 不是合法 base64: {e}")
 
-    if len(raw) <= IV_LEN:
-        raise ValueError("data_enc 長度不足（缺少 iv 或密文）")
-
-    iv, ciphertext = raw[:IV_LEN], raw[IV_LEN:]
-    try:
-        plaintext = AESGCM(_aes_key()).decrypt(iv, ciphertext, None)
-    except Exception as e:
-        # 金鑰不符 / 內容被竄改 / tag 驗證失敗都會到這
-        raise ValueError(f"AES 解密失敗: {e}")
-
+    plaintext = _decrypt_raw(raw)
     try:
         return json.loads(plaintext)
     except Exception as e:

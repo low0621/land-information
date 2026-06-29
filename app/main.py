@@ -7,12 +7,12 @@ from fractions import Fraction
 
 import anyio.to_thread
 import xlrd
-from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
-from app.crypto import decrypt_json
+from app.crypto import decrypt_file_bytes, decrypt_json
 from app.database import get_db
 from app.models import PriceIndex, Project, Zoning
 from app.schemas import (
@@ -546,14 +546,21 @@ async def upload_zoning_csv(
     ),
 )
 async def upload_price_index(
-    file: UploadFile = File(..., description="物價指數 xls 檔"),
+    file: UploadFile = File(..., description="物價指數 xls 檔（或 AES 加密後的二進位）"),
+    encrypted: str | None = Form(None, description="設為 1 表示 file 是 AES 加密的 xls"),
     db: Session = Depends(get_db),
 ) -> PriceIndexUploadResponse:
-    if not file.filename or not file.filename.lower().endswith(".xls"):
+    raw = await file.read()
+    if encrypted:
+        # file 是 AES-GCM 加密的 xls 位元組 (iv ‖ ciphertext+tag)，先解密還原
+        try:
+            raw = decrypt_file_bytes(raw)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=f"檔案解密失敗: {e}")
+    elif not file.filename or not file.filename.lower().endswith(".xls"):
         print(file.filename)
         raise HTTPException(status_code=400, detail="請上傳 .xls 檔")
 
-    raw = await file.read()
     try:
         wb = xlrd.open_workbook(file_contents=raw)
     except Exception as e:
