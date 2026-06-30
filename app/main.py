@@ -23,6 +23,7 @@ from app.schemas import (
     ParcelQuery,
     ParcelResponse,
     PdfAnalysisResponse,
+    PriceIndexBulk,
     PriceIndexUploadResponse,
     ProjectCreate,
     ProjectDelete,
@@ -605,6 +606,79 @@ async def upload_price_index(
             else:
                 existing.price_idx = price_idx
                 updated += 1
+
+    db.commit()
+    return PriceIndexUploadResponse(
+        inserted=inserted,
+        updated=updated,
+        skipped=skipped,
+        errors=errors,
+    )
+
+
+@app.post(
+    "/api/price-index/bulk",
+    response_model=PriceIndexUploadResponse,
+    summary="上傳已解析的物價指數記錄（JSON，支援 AES 加密）",
+    description=(
+        "前端自行解析 xls 後，將 (民國年, 月, 指數) 記錄陣列送來寫入 `price_index` 表。\n\n"
+        "**Request body（`items` / `data_enc` 擇一）**：\n"
+        "- `items` (list)：每筆 `{ year, month, price_idx }`\n"
+        "- `data_enc` (str)：AES-GCM 加密後的記錄陣列 base64（明文為上述陣列 JSON）\n\n"
+        "**行為**：以 (year, month) 為唯一鍵 upsert；單筆格式錯誤計入 `skipped` 不影響其他筆。\n\n"
+        "**錯誤回應**：\n"
+        "- `400`：`data_enc` 解密失敗或內容非陣列\n"
+        "- `422`：`items` / `data_enc` 皆未提供"
+    ),
+)
+def upload_price_index_bulk(
+    payload: PriceIndexBulk,
+    db: Session = Depends(get_db),
+) -> PriceIndexUploadResponse:
+    # items / data_enc 擇一：有加密就先解密還原成記錄陣列
+    if payload.data_enc is not None:
+        try:
+            records = decrypt_json(payload.data_enc)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=f"data_enc 解密失敗: {e}")
+    elif payload.items is not None:
+        records = [it.model_dump() for it in payload.items]
+    else:
+        raise HTTPException(status_code=422, detail="必須提供 items 或 data_enc 其一")
+
+    if not isinstance(records, list):
+        raise HTTPException(status_code=400, detail="解密後內容不是記錄陣列")
+
+    inserted = 0
+    updated = 0
+    skipped = 0
+    errors: list[str] = []
+
+    for idx, rec in enumerate(records):
+        try:
+            year = int(rec["year"])
+            month = int(rec["month"])
+            price_idx = float(rec["price_idx"])
+        except (KeyError, ValueError, TypeError) as e:
+            skipped += 1
+            errors.append(f"第 {idx + 1} 筆: {e}")
+            continue
+        if not 1 <= month <= 12:
+            skipped += 1
+            errors.append(f"第 {idx + 1} 筆: month 超出範圍 ({month})")
+            continue
+
+        existing = (
+            db.query(PriceIndex)
+            .filter(PriceIndex.year == year, PriceIndex.month == month)
+            .first()
+        )
+        if existing is None:
+            db.add(PriceIndex(year=year, month=month, price_idx=price_idx))
+            inserted += 1
+        else:
+            existing.price_idx = price_idx
+            updated += 1
 
     db.commit()
     return PriceIndexUploadResponse(

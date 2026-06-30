@@ -77,6 +77,20 @@ class PriceIndexUploadResponse(BaseModel):
     errors: list[str]
 
 
+class PriceIndexItem(BaseModel):
+    year: int = Field(..., description="民國年")
+    month: int = Field(..., ge=1, le=12, description="月份 1-12")
+    price_idx: float = Field(..., description="物價指數")
+
+
+class PriceIndexBulk(BaseModel):
+    # items / data_enc 擇一：明文記錄陣列，或 AES-GCM 加密後的 base64（明文為記錄陣列 JSON）
+    items: list[PriceIndexItem] | None = Field(
+        None, description="物價指數記錄陣列；與 data_enc 擇一")
+    data_enc: str | None = Field(
+        None, description="AES-GCM 加密後的記錄陣列 base64；與 items 擇一")
+
+
 class LandTaxQuery(BaseModel):
     year: int = Field(..., description="計算年度（民國／西元依 etax 規格）")
     month: int = Field(..., ge=1, le=12, description="計算月份")
