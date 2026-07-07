@@ -34,6 +34,7 @@ from app.schemas import (
 from app.seed import init_db
 from app.services.easymap import fetch_land_detail, fetch_land_geo, resolve_codes
 from app.services.etax import fetch_etax_calculate
+from app.services.luz import query_land_value as luz_query_land_value
 from app.services.mortgage import fetch_house_price
 from app.services.pdf_analysis import analyze_pdf
 
@@ -249,7 +250,9 @@ def query_parcel(payload: ParcelQuery, db: Session = Depends(get_db)) -> ParcelR
     if zoning is None:
         raise HTTPException(status_code=404, detail="zoning not found")
 
-    # 面積 / 公告現值：透過 easymap 爬蟲取得
+    # 面積 / 公告現值：主線走 easymap 爬蟲；easymap 整條掛掉時改用 luz 備援。
+    # luz 完全獨立於 easymap（自帶縣市/鄉鎮/地段/地號的代號解析），
+    # 故 resolve_codes 也失敗時仍能查得到。
     try:
         city_code, town_code, office, section_no = resolve_codes(
             county=payload.county,
@@ -265,11 +268,23 @@ def query_parcel(payload: ParcelQuery, db: Session = Depends(get_db)) -> ParcelR
         )
         area = detail["面積"]
         announced_value = detail["公告現值"]
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(
-            status_code=502, detail=f"easymap fetch failed: {e}")
+    except Exception as easymap_err:
+        print("easymap failed, fallback to luz: ", easymap_err)
+        try:
+            detail = luz_query_land_value(
+                county_name=payload.county,
+                town_name=payload.district,
+                section_name=payload.section_no,
+                land_no=payload.land_no,
+            )
+            area = detail["面積"]
+            announced_value = detail["公告現值"]
+        except Exception as luz_err:
+            print("luz fallback also failed: ", luz_err)
+            raise HTTPException(
+                status_code=502,
+                detail=f"easymap & luz 皆失敗: easymap={easymap_err}; luz={luz_err}",
+            )
 
     return ParcelResponse(
         building_coverage=zoning.building_coverage,
