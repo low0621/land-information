@@ -34,6 +34,7 @@ from app.schemas import (
 from app.seed import init_db
 from app.services.easymap import fetch_land_detail, fetch_land_geo, resolve_codes
 from app.services.etax import fetch_etax_calculate
+from app.services.luz import fetch_land_geo as luz_fetch_land_geo
 from app.services.luz import query_land_value as luz_query_land_value
 from app.services.mortgage import fetch_house_price
 from app.services.pdf_analysis import analyze_pdf
@@ -316,6 +317,8 @@ def query_parcel(payload: ParcelQuery, db: Session = Depends(get_db)) -> ParcelR
     ),
 )
 def query_house_price(payload: HousePriceQuery) -> HousePriceResponse:
+    # 座標 / 地址：主線走 easymap；easymap 整條掛掉時改用 luz 備援。
+    # luz 完全獨立於 easymap（自帶代號解析），座標直接取自 SEARCHCADA geometry。
     try:
         _city_code, _town_code, office, section_no = resolve_codes(
             county=payload.county,
@@ -327,13 +330,21 @@ def query_house_price(payload: HousePriceQuery) -> HousePriceResponse:
             sect_no=section_no,
             land_no=payload.land_no,
         )
-    except ValueError as e:
-        print(e)
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        print("easymap error: ", e)
-        raise HTTPException(
-            status_code=502, detail=f"easymap fetch failed: {e}")
+    except Exception as easymap_err:
+        print("easymap failed, fallback to luz: ", easymap_err)
+        try:
+            geo = luz_fetch_land_geo(
+                county_name=payload.county,
+                town_name=payload.district,
+                section_name=payload.section_no,
+                land_no=payload.land_no,
+            )
+        except Exception as luz_err:
+            print("luz fallback also failed: ", luz_err)
+            raise HTTPException(
+                status_code=502,
+                detail=f"easymap & luz 皆失敗: easymap={easymap_err}; luz={luz_err}",
+            )
 
     try:
         price_result = fetch_house_price(

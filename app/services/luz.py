@@ -19,6 +19,8 @@ import requests
 import urllib3
 from bs4 import BeautifulSoup
 
+from app.utils import wgs2address, wgs2twd
+
 # 對齊 easymap: 只回傳這三個欄位, 讓 luz 能直接當備援
 TARGET_FIELDS = ("面積", "公告現值", "公告地價")
 
@@ -59,16 +61,30 @@ AJAX_HEADERS = {
 }
 
 
-def _new_session() -> requests.Session:
-    """建立 session 並訪問首頁, 取得 ws_*.ashx 必要的 ASP.NET_SessionId cookie。"""
+def _open_session() -> tuple[requests.Session, str]:
+    """GET 首頁一次, 同時取得 ASP.NET_SessionId cookie 與 M_CONFIG.Token。
+
+    luz 有 IP 層級限流（短時間開首頁太多次會擋 20 秒），故一次 GET 就把
+    cookie 與 token 都拿到, 避免重複抓首頁。
+    """
     session = requests.Session()
     session.headers.update(AJAX_HEADERS)
-    session.get(INDEX_URL, verify=False, timeout=HTTP_TIMEOUT)
+    resp = session.get(INDEX_URL, verify=False, timeout=HTTP_TIMEOUT)
+    resp.raise_for_status()
+    match = TOKEN_PATTERN.search(resp.text)
+    if not match:
+        raise RuntimeError(f"luz token not found: {resp.text[:500]!r}")
+    return session, match.group(1)
+
+
+def _new_session() -> requests.Session:
+    """僅需 session cookie（不需 token）時用, 例如 GETFORM。"""
+    session, _ = _open_session()
     return session
 
 
 def fetch_token(session: requests.Session) -> str:
-    """GET 首頁, 從 M_CONFIG 撈出當次 session token。"""
+    """從既有 session 再抓首頁取 token；一般請改用 _open_session 一次拿齊。"""
     resp = session.get(INDEX_URL, verify=False, timeout=HTTP_TIMEOUT)
     resp.raise_for_status()
     match = TOKEN_PATTERN.search(resp.text)
@@ -96,8 +112,7 @@ def fetch_form(func: str, session: requests.Session | None = None) -> str:
 
 def _get_data(obj: str, extra: dict[str, str]) -> list[dict]:
     """呼叫 ws_data.ashx?CMD=GETDATA&OBJ=<obj>, 回傳 JSON list。"""
-    session = _new_session()
-    token = fetch_token(session)
+    session, token = _open_session()
     resp = session.post(
         DATA_URL,
         params={"CMD": "GETDATA", "OBJ": obj, "TOKEN": token},
@@ -139,6 +154,10 @@ def get_counties() -> dict[str, str]:
 def get_towns(county_code: str) -> dict[str, str]:
     """鄉鎮名稱 -> 鄉鎮代號 (TownID)。GETDATA OBJ=TOWN。"""
     data = _get_data("TOWN", {"FUNC": FUNC, "COUNTY": county_code})
+    if not (data and all("TownID" in t and "TownName" in t for t in data)):
+        raise RuntimeError(
+            f"luz TOWN 回傳非預期結構（可能被限流/降級）: {str(data)[:200]}"
+        )
     return {t["TownName"]: t["TownID"] for t in data}
 
 
@@ -149,6 +168,12 @@ def get_sections(town_id: str) -> dict[str, str]:
     NAME 原始格式為 "[0021]龍泉段一小段"，key 去掉 [代碼] 前綴以便用地段名比對。
     """
     data = _get_data("LANDSEC2", {"FUNC": FUNC, "TOWN": town_id})
+    # IP 被限流時 LANDSEC2 會回降級 placeholder（缺 NAME key），
+    # 明確拋錯以免 fallback 端看到難懂的 KeyError。
+    if not (data and all("ID" in s and "NAME" in s for s in data)):
+        raise RuntimeError(
+            f"luz LANDSEC2 回傳非預期結構（可能被限流/降級）: {str(data)[:200]}"
+        )
     sections: dict[str, str] = {}
     for s in data:
         name = SEC_NAME_PREFIX.sub("", s["NAME"]).strip()
@@ -189,19 +214,19 @@ def pad_cada_no(land_no: str) -> str:
     return parts[0].strip().zfill(4) + parts[1].strip().zfill(4)
 
 
-def search_cada(landsec_id: str, land_no: str) -> dict:
-    """CMD=SEARCHCADA, 回傳該地號的 attributes（含面積/公告現值/公告地價等）。
+def search_cada_feature(landsec_id: str, land_no: str) -> dict:
+    """CMD=SEARCHCADA, 回傳整個 feature（含 geometry 座標與 attributes）。
 
     VAL1 = LANDSEC 代號(6) + 補零地號(8)，總長須為 14。
+    geometry 為 WGS84 (wkid 4326)：{"x": 經度, "y": 緯度}。
     注意上游有 rate limit（連續查詢會回「請5秒後再進行查詢」），
-    批次查詢時呼叫端需自行間隔 >= 5 秒。
+    撞到會自動等待重試（見 RATE_LIMIT_* 常數）。
     """
     val1 = landsec_id + pad_cada_no(land_no)
     if len(val1) != 14:
         raise ValueError(f"VAL1 must be 14 chars, got {val1!r} (len={len(val1)})")
 
-    session = _new_session()
-    token = fetch_token(session)
+    session, token = _open_session()
     for attempt in range(RATE_LIMIT_RETRIES + 1):
         resp = session.post(
             DATA_URL,
@@ -222,11 +247,16 @@ def search_cada(landsec_id: str, land_no: str) -> dict:
         features = data.get("features") if isinstance(data, dict) else None
         if not features:
             raise RuntimeError(f"luz SEARCHCADA no result for VAL1={val1!r}")
-        return features[0]["attributes"]
+        return features[0]
     # 迴圈結束仍未成功 = 重試用盡都還在限流
     raise RuntimeError(
         f"luz SEARCHCADA rate limited after {RATE_LIMIT_RETRIES} retries: {val1!r}"
     )
+
+
+def search_cada(landsec_id: str, land_no: str) -> dict:
+    """CMD=SEARCHCADA, 回傳該地號的 attributes（含面積/公告現值/公告地價等）。"""
+    return search_cada_feature(landsec_id, land_no)["attributes"]
 
 
 def query_land_value(
@@ -241,3 +271,30 @@ def query_land_value(
     landsec_id = resolve_section(town_id, section_name)
     attrs = search_cada(landsec_id, land_no)
     return {field: float(attrs[field]) for field in TARGET_FIELDS}
+
+
+def fetch_land_geo(
+    county_name: str,
+    town_name: str,
+    section_name: str,
+    land_no: str,
+) -> dict[str, float | str]:
+    """抓地號中心點座標（WGS84 → TWD97）與反向地理編碼地址。
+
+    對齊 easymap.fetch_land_geo 的輸出 {twd_x, twd_y, address}，作為房價估值
+    （query_house_price）的備援。座標直接取自 SEARCHCADA 回應的 geometry
+    （wkid 4326，x=經度、y=緯度）。
+    """
+    county_code = resolve_county(county_name)
+    town_id = resolve_town(county_code, town_name)
+    landsec_id = resolve_section(town_id, section_name)
+    feature = search_cada_feature(landsec_id, land_no)
+
+    geometry = feature.get("geometry") or {}
+    lng, lat = float(geometry["x"]), float(geometry["y"])
+    twd = wgs2twd(lat=lat, lng=lng)
+    return {
+        "twd_x": twd["x"],
+        "twd_y": twd["y"],
+        "address": wgs2address(lat=lat, lng=lng),
+    }
