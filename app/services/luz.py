@@ -11,7 +11,9 @@
 query_land_value() 一次串完整條流程。
 """
 
+import os
 import re
+import threading
 import time
 from functools import lru_cache
 
@@ -47,6 +49,26 @@ RATE_LIMIT_HINT = "請5秒後再進行查詢"
 RATE_LIMIT_WAIT = 5.5
 RATE_LIMIT_RETRIES = 2
 
+# 首頁 IP 層級限流防護: 短時間開首頁太多次整個 IP 會被擋。FastAPI 同步 handler
+# 跑在 threadpool 可能並發打 luz, 故用全域鎖 + 時間戳強制首頁 GET 的最小間隔,
+# 把所有 (含並發) 首頁請求排隊拉開。間隔可用 LUZ_INDEX_MIN_INTERVAL 調整。
+INDEX_MIN_INTERVAL = float(os.environ.get("LUZ_INDEX_MIN_INTERVAL", "1.5"))
+_index_lock = threading.Lock()
+_last_index_at = 0.0  # time.monotonic()
+
+
+def _get_index(session: requests.Session) -> requests.Response:
+    """節流後 GET 首頁: 確保與上一次首頁請求間隔 >= INDEX_MIN_INTERVAL 秒。"""
+    global _last_index_at
+    with _index_lock:
+        wait = INDEX_MIN_INTERVAL - (time.monotonic() - _last_index_at)
+        if wait > 0:
+            time.sleep(wait)
+        resp = session.get(INDEX_URL, verify=False, timeout=HTTP_TIMEOUT)
+        _last_index_at = time.monotonic()
+    resp.raise_for_status()
+    return resp
+
 # ws_form.ashx / ws_data.ashx 都用 jQuery $.get/$.post 呼叫,
 # 後端會檢查 XMLHttpRequest header, 少了就回空字串。
 AJAX_HEADERS = {
@@ -69,8 +91,7 @@ def _open_session() -> tuple[requests.Session, str]:
     """
     session = requests.Session()
     session.headers.update(AJAX_HEADERS)
-    resp = session.get(INDEX_URL, verify=False, timeout=HTTP_TIMEOUT)
-    resp.raise_for_status()
+    resp = _get_index(session)
     match = TOKEN_PATTERN.search(resp.text)
     if not match:
         raise RuntimeError(f"luz token not found: {resp.text[:500]!r}")
@@ -85,8 +106,7 @@ def _new_session() -> requests.Session:
 
 def fetch_token(session: requests.Session) -> str:
     """從既有 session 再抓首頁取 token；一般請改用 _open_session 一次拿齊。"""
-    resp = session.get(INDEX_URL, verify=False, timeout=HTTP_TIMEOUT)
-    resp.raise_for_status()
+    resp = _get_index(session)
     match = TOKEN_PATTERN.search(resp.text)
     if not match:
         raise RuntimeError(f"luz token not found: {resp.text[:500]!r}")
