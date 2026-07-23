@@ -1,4 +1,5 @@
 import csv
+import gzip
 import io
 import os
 import uuid as uuid_lib
@@ -7,12 +8,12 @@ from fractions import Fraction
 
 import anyio.to_thread
 import xlrd
-from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
-from app.crypto import decrypt_file_bytes, decrypt_json
+from app.crypto import decrypt_file_bytes, decrypt_json, decrypt_json_bytes
 from app.database import get_db
 from app.models import PriceIndex, Project, Zoning
 from app.schemas import (
@@ -101,34 +102,58 @@ def list_user_projects(
     summary="新增專案",
     description=(
         "建立一筆新的專案，將 JSON 內容整包存入 `projects` 表。\n\n"
-        "**Request body 參數**：\n"
-        "- `user_id` (str)：使用者 id\n"
-        "- `data` (object)：專案內容，任意 JSON 物件\n\n"
+        "支援兩種 request body：\n"
+        "1. **binary**（`Content-Type: application/octet-stream`）：body 為 AES-GCM 密文 "
+        "`iv ‖ ciphertext`（明文為 gzip 過的 JSON `{user_id, data}`）。"
+        "`user_id` 一併加密，體積最小，推薦。\n"
+        "2. **JSON**（`application/json`，舊版相容）：\n"
+        "   - `user_id` (str)：使用者 id\n"
+        "   - `data` (object) 或 `data_enc` (str, 加密)：專案內容\n\n"
         "**回應**：\n"
         "- `pid` (str)：由後端產生的專案 id（uuid4）\n"
         "- `user_id` (str)：與 payload 相同\n"
         "- `data` (object)：與 payload 相同\n\n"
         "**錯誤回應**：\n"
+        "- `400`：解密失敗\n"
         "- `422`：payload 欄位缺漏或型別錯誤"
     ),
 )
-def create_project(
-    payload: ProjectCreate,
+async def create_project(
+    request: Request,
     db: Session = Depends(get_db),
 ) -> ProjectResponse:
-    # data / data_enc 擇一：有加密就先解密還原成原始 JSON
-    if payload.data_enc is not None:
+    content_type = request.headers.get("content-type", "")
+    if "application/octet-stream" in content_type:
+        # 新版 binary：user_id / data 全包在加密密文內
         try:
-            data = decrypt_json(payload.data_enc)
+            body = decrypt_json_bytes(await request.body())
         except ValueError as e:
-            raise HTTPException(status_code=400, detail=f"data_enc 解密失敗: {e}")
-    elif payload.data is not None:
-        data = payload.data
+            raise HTTPException(status_code=400, detail=f"binary 解密失敗: {e}")
+        user_id, data = body.get("user_id"), body.get("data")
+        if not user_id or data is None:
+            raise HTTPException(
+                status_code=422, detail="binary payload 必須含 user_id / data")
     else:
-        raise HTTPException(status_code=422, detail="必須提供 data 或 data_enc 其一")
+        # 舊版 JSON envelope：data / data_enc 擇一
+        try:
+            payload = ProjectCreate.model_validate(await request.json())
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=422, detail=f"JSON payload 格式錯誤: {e}")
+        user_id = payload.user_id
+        if payload.data_enc is not None:
+            try:
+                data = decrypt_json(payload.data_enc)
+            except ValueError as e:
+                raise HTTPException(status_code=400, detail=f"data_enc 解密失敗: {e}")
+        elif payload.data is not None:
+            data = payload.data
+        else:
+            raise HTTPException(status_code=422, detail="必須提供 data 或 data_enc 其一")
 
     pid = str(uuid_lib.uuid4())
-    project = Project(pid=pid, user_id=payload.user_id, data=data)
+    project = Project(pid=pid, user_id=user_id, data=data)
     db.add(project)
     db.commit()
     db.refresh(project)
@@ -141,35 +166,59 @@ def create_project(
     summary="更新專案",
     description=(
         "依 `pid` 找到專案後，整包覆寫 `data`。需提供 `user_id` 驗證擁有者。\n\n"
-        "**Request body 參數**：\n"
-        "- `user_id` (str)：使用者 id（驗證擁有者）\n"
-        "- `pid` (str)：要更新的專案 id\n"
-        "- `data` (object)：更新後的專案內容，會整包覆蓋原本的 `data`\n\n"
+        "支援兩種 request body：\n"
+        "1. **binary**（`Content-Type: application/octet-stream`）：body 為 AES-GCM 密文 "
+        "`iv ‖ ciphertext`（明文為 gzip 過的 JSON `{user_id, pid, data}`）。"
+        "`user_id`／`pid` 一併加密，體積最小，推薦。\n"
+        "2. **JSON**（`application/json`，舊版相容）：\n"
+        "   - `user_id` (str)：使用者 id（驗證擁有者）\n"
+        "   - `pid` (str)：要更新的專案 id\n"
+        "   - `data` (object) 或 `data_enc` (str, 加密)：更新後的專案內容\n\n"
         "**錯誤回應**：\n"
         "- `404`：找不到對應 `pid` 的專案\n"
         "- `403`：`user_id` 與專案擁有者不符\n"
+        "- `400`：解密失敗\n"
         "- `422`：payload 欄位缺漏或型別錯誤"
     ),
 )
-def update_project(
-    payload: ProjectUpdate,
+async def update_project(
+    request: Request,
     db: Session = Depends(get_db),
 ) -> ProjectResponse:
-    # data / data_enc 擇一：有加密就先解密還原成原始 JSON
-    if payload.data_enc is not None:
+    content_type = request.headers.get("content-type", "")
+    if "application/octet-stream" in content_type:
+        # 新版 binary：user_id / pid / data 全包在加密密文內
         try:
-            data = decrypt_json(payload.data_enc)
+            body = decrypt_json_bytes(await request.body())
         except ValueError as e:
-            raise HTTPException(status_code=400, detail=f"data_enc 解密失敗: {e}")
-    elif payload.data is not None:
-        data = payload.data
+            raise HTTPException(status_code=400, detail=f"binary 解密失敗: {e}")
+        user_id, pid, data = body.get("user_id"), body.get("pid"), body.get("data")
+        if not user_id or not pid or data is None:
+            raise HTTPException(
+                status_code=422, detail="binary payload 必須含 user_id / pid / data")
     else:
-        raise HTTPException(status_code=422, detail="必須提供 data 或 data_enc 其一")
+        # 舊版 JSON envelope：data / data_enc 擇一
+        try:
+            payload = ProjectUpdate.model_validate(await request.json())
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=422, detail=f"JSON payload 格式錯誤: {e}")
+        user_id, pid = payload.user_id, payload.pid
+        if payload.data_enc is not None:
+            try:
+                data = decrypt_json(payload.data_enc)
+            except ValueError as e:
+                raise HTTPException(status_code=400, detail=f"data_enc 解密失敗: {e}")
+        elif payload.data is not None:
+            data = payload.data
+        else:
+            raise HTTPException(status_code=422, detail="必須提供 data 或 data_enc 其一")
 
-    project = db.query(Project).filter(Project.pid == payload.pid).first()
+    project = db.query(Project).filter(Project.pid == pid).first()
     if project is None:
         raise HTTPException(status_code=404, detail="project not found")
-    if project.user_id != payload.user_id:
+    if project.user_id != user_id:
         raise HTTPException(
             status_code=403, detail="user_id does not match project owner")
 
@@ -560,8 +609,12 @@ async def upload_zoning_csv(
     summary="上傳物價指數 xls 並更新資料庫",
     description=(
         "上傳消費者物價指數 xls 檔，將每個 (民國年, 月份) 的指數寫入 `price_index` 表。\n\n"
-        "**Form 參數**：\n"
-        "- `file` (UploadFile)：`.xls` 檔\n\n"
+        "支援兩種 request body：\n"
+        "1. **binary**（`Content-Type: application/octet-stream`）：body 為 AES-GCM 密文 "
+        "`iv ‖ ciphertext`（明文為 gzip 過的 xls 位元組）。體積最小，推薦。\n"
+        "2. **multipart**（`multipart/form-data`，舊版相容）：\n"
+        "   - `file` (UploadFile)：`.xls` 檔（或 AES 加密後的二進位）\n"
+        "   - `encrypted` (str)：設為 `1` 表示 file 是 AES 加密的 xls\n\n"
         "**xls 結構**：\n"
         "- 第一欄為民國年，直接以民國年存入 DB（不轉西元）\n"
         "- 第 2~13 欄依序為 1 月～12 月的指數\n"
@@ -573,20 +626,39 @@ async def upload_zoning_csv(
     ),
 )
 async def upload_price_index(
-    file: UploadFile = File(..., description="物價指數 xls 檔（或 AES 加密後的二進位）"),
-    encrypted: str | None = Form(None, description="設為 1 表示 file 是 AES 加密的 xls"),
+    request: Request,
     db: Session = Depends(get_db),
 ) -> PriceIndexUploadResponse:
-    raw = await file.read()
-    if encrypted:
-        # file 是 AES-GCM 加密的 xls 位元組 (iv ‖ ciphertext+tag)，先解密還原
+    content_type = request.headers.get("content-type", "")
+    if "application/octet-stream" in content_type:
+        # 新版 binary：body 為 (gzip 過的 xls) 再 AES 加密的位元組 (iv ‖ ciphertext+tag)
         try:
-            raw = decrypt_file_bytes(raw)
+            raw = decrypt_file_bytes(await request.body())
         except ValueError as e:
             raise HTTPException(status_code=400, detail=f"檔案解密失敗: {e}")
-    elif not file.filename or not file.filename.lower().endswith(".xls"):
-        print(file.filename)
-        raise HTTPException(status_code=400, detail="請上傳 .xls 檔")
+    else:
+        # 舊版 multipart form-data
+        form = await request.form()
+        file = form.get("file")
+        if file is None or not hasattr(file, "read"):
+            raise HTTPException(status_code=422, detail="缺少 file 欄位")
+        raw = await file.read()
+        if form.get("encrypted"):
+            # file 是 AES-GCM 加密的 xls 位元組 (iv ‖ ciphertext+tag)，先解密還原
+            try:
+                raw = decrypt_file_bytes(raw)
+            except ValueError as e:
+                raise HTTPException(status_code=400, detail=f"檔案解密失敗: {e}")
+        elif not file.filename or not file.filename.lower().endswith(".xls"):
+            raise HTTPException(status_code=400, detail="請上傳 .xls 檔")
+
+    # 新版前端會先 gzip 再加密以縮小 payload；xls 檔頭為 D0 CF 11 E0，不會與 gzip magic 衝突。
+    # 舊版未壓縮的 xls 直接進 xlrd，向後相容。
+    if raw[:2] == b"\x1f\x8b":
+        try:
+            raw = gzip.decompress(raw)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"gzip 解壓失敗: {e}")
 
     try:
         wb = xlrd.open_workbook(file_contents=raw)
