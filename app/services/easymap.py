@@ -55,7 +55,8 @@ def fetch_land_detail(
         "struts.token.name": "token",
         "token": token,
     }
-    resp = session.post(DETAIL_URL, data=payload, verify=False, timeout=HTTP_TIMEOUT)
+    resp = session.post(DETAIL_URL, data=payload,
+                        verify=False, timeout=HTTP_TIMEOUT)
     resp.raise_for_status()
     # 只負責地籍 HTML 資料（面積 / 公告現值 / 公告地價）；座標與地址見 fetch_land_geo
     return parse_land_detail_html(resp.text)
@@ -170,13 +171,14 @@ def resolve_codes(county: str, district: str, section_no: str) -> tuple[str, str
 
 
 def main():
-    city_code, town_code, office = resolve_codes("新北市", "三重區", "1768")
+    city_code, town_code, office, section_no = resolve_codes(
+        "臺北市", "大同區", "延平段二小段")
     result = fetch_land_detail(
         city_code=city_code,
         town_code=town_code,
         office=office,
-        sect_no="1768",
-        land_no="46",
+        sect_no=section_no,
+        land_no="591",
     )
     print(result)
 
