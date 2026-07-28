@@ -28,13 +28,13 @@ from app.crypto import decrypt_file_bytes, decrypt_json, decrypt_json_bytes
 from app.database import get_db
 from app.models import PriceIndex, Project, Zoning
 from app.schemas import (
+    DocExtractResponse,
     HousePriceQuery,
     HousePriceResponse,
     LandTaxQuery,
     LandTaxResponse,
     ParcelQuery,
     ParcelResponse,
-    PdfAnalysisResponse,
     PriceIndexBulk,
     PriceIndexUploadResponse,
     ProjectCreate,
@@ -843,10 +843,10 @@ def _assemble_chunk(upload_id: str, index: int, count: int, chunk: bytes) -> byt
 
 # 舊路徑 /api/pdf-analysis 會被公司 DLP 以 URL 關鍵字擋下（403），改以 /api/doc-extract 為主。
 # 舊路徑保留為 alias（不列入 OpenAPI），讓尚未更新的前端仍可運作。
-@app.post("/api/pdf-analysis", response_model=PdfAnalysisResponse, include_in_schema=False)
+@app.post("/api/pdf-analysis", response_model=DocExtractResponse, include_in_schema=False)
 @app.post(
     "/api/doc-extract",
-    response_model=PdfAnalysisResponse,
+    response_model=DocExtractResponse,
     summary="上傳 PDF 並解析為結構化資料（LLM 或規則式）",
     description=(
         "上傳一份土地登記謄本／權狀 PDF，回傳結構化結果。\n\n"
@@ -883,6 +883,8 @@ def _assemble_chunk(upload_id: str, index: int, count: int, chunk: bytes) -> byt
         "- `prev_price` (float)：前次移轉現值（元/m²）\n"
         "- `acquire_year_roc` (int)：取得年月的民國年（與前次移轉現值同行；0 表未取得）\n"
         "- `acquire_month` (int)：取得年月的月份 1-12（與前次移轉現值同行；0 表未取得）\n\n"
+        "另外頂層會附上 `engine` (str)，標示實際產出這份結果的引擎（`rule` 或 `llm`）。"
+        "請求 `engine=auto` 時這裡會是實際落到的那一個，可用來判斷有沒有發生 fallback。\n\n"
         "**錯誤回應**：\n"
         "- `400`：檔案內容為空、AES 解密失敗、gzip 解壓失敗，或（multipart）副檔名非 `.pdf`\n"
         "- `422`：`engine` 值不合法；或 `engine=rule` 但 PDF 沒有文字層（掃描影像檔），"
@@ -897,7 +899,7 @@ async def analyze_pdf_endpoint(
         pattern="^(llm|rule|auto)$",
         description="解析引擎：`llm`（OpenAI）／`rule`（本機 pypdf 規則式）／`auto`（rule 失敗才退回 llm）",
     ),
-) -> PdfAnalysisResponse:
+) -> DocExtractResponse:
     content_type = request.headers.get("content-type", "")
     upload_id = request.headers.get("x-upload-id")
     if "application/octet-stream" in content_type and upload_id:
@@ -975,7 +977,7 @@ async def analyze_pdf_endpoint(
         else:
             # auto 模式下抽不到任何一筆，視為規則沒吃下這種版型，退回 LLM
             if result.items or engine == "rule":
-                return result
+                return DocExtractResponse(items=result.items, engine="rule")
             print("rule pdf analysis: no items, fallback to llm")
 
     try:
@@ -984,7 +986,8 @@ async def analyze_pdf_endpoint(
         print("openai pdf analysis error: ", e)
         raise HTTPException(status_code=502, detail=f"PDF 分析失敗: {e}")
 
-    return result
+    # engine 標的是實際產出結果的引擎，不是請求帶的值（auto 會落到其中一個）
+    return DocExtractResponse(items=result.items, engine="llm")
 
 
 # 靜態網站掛在 "/"，要放在所有 API 路由之後
