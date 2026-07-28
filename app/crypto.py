@@ -1,4 +1,5 @@
 import base64
+import gzip
 import hashlib
 import json
 import os
@@ -34,19 +35,40 @@ def decrypt_file_bytes(raw: bytes) -> bytes:
     return _decrypt_raw(raw)
 
 
-def decrypt_json(blob_b64: str) -> Any:
-    """解密前端送來的 AES-GCM 密文，回傳原始 JSON 物件。
+def _plaintext_to_json(plaintext: bytes) -> Any:
+    """把解密後的明文 bytes 還原成 JSON 物件。
 
-    前端格式：base64( iv(12 bytes) ‖ ciphertext+tag )，明文為 JSON 字串。
+    新版前端會先 gzip 再加密以縮小 payload；開頭為 gzip magic (1f 8b) 就解壓。
+    舊版未壓縮的明文開頭為 '{'，直接走 json.loads，向後相容。
+    """
+    if plaintext[:2] == b"\x1f\x8b":
+        try:
+            plaintext = gzip.decompress(plaintext)
+        except Exception as e:
+            raise ValueError(f"gzip 解壓失敗: {e}")
+    try:
+        return json.loads(plaintext)
+    except Exception as e:
+        raise ValueError(f"解密後不是合法 JSON: {e}")
+
+
+def decrypt_json(blob_b64: str) -> Any:
+    """解密前端送來的 AES-GCM 密文（base64 字串），回傳原始 JSON 物件。
+
+    前端格式：base64( iv(12 bytes) ‖ ciphertext+tag )，明文為 (gzip 過的) JSON 字串。
     解密或 JSON 解析失敗時拋出 ValueError。
     """
     try:
         raw = base64.b64decode(blob_b64)
     except Exception as e:
         raise ValueError(f"data_enc 不是合法 base64: {e}")
+    return _plaintext_to_json(_decrypt_raw(raw))
 
-    plaintext = _decrypt_raw(raw)
-    try:
-        return json.loads(plaintext)
-    except Exception as e:
-        raise ValueError(f"解密後不是合法 JSON: {e}")
+
+def decrypt_json_bytes(raw: bytes) -> Any:
+    """解密 raw binary body（iv ‖ ciphertext+tag，不經 base64），回傳原始 JSON 物件。
+
+    供 Content-Type: application/octet-stream 的 binary 傳輸使用；明文為 (gzip 過的) JSON。
+    解密或 JSON 解析失敗時拋出 ValueError。
+    """
+    return _plaintext_to_json(_decrypt_raw(raw))
