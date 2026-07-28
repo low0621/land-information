@@ -9,7 +9,16 @@ from fractions import Fraction
 
 import anyio.to_thread
 import xlrd
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import (
+    Depends,
+    FastAPI,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    Request,
+    UploadFile,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -41,6 +50,7 @@ from app.services.luz import fetch_land_geo as luz_fetch_land_geo
 from app.services.luz import query_land_value as luz_query_land_value
 from app.services.mortgage import fetch_house_price
 from app.services.pdf_analysis import analyze_pdf
+from app.services.pdf_rule_parser import PdfTextLayerMissing, analyze_pdf_rule_based
 
 ZONING_CSV_HEADER_MAP = {
     "縣市": "county",
@@ -837,9 +847,9 @@ def _assemble_chunk(upload_id: str, index: int, count: int, chunk: bytes) -> byt
 @app.post(
     "/api/doc-extract",
     response_model=PdfAnalysisResponse,
-    summary="上傳 PDF 並以 OpenAI 解析為結構化資料",
+    summary="上傳 PDF 並解析為結構化資料（LLM 或規則式）",
     description=(
-        "上傳一份土地登記謄本／權狀 PDF，後端送至 OpenAI 做檔案分析並回傳結構化結果。\n\n"
+        "上傳一份土地登記謄本／權狀 PDF，回傳結構化結果。\n\n"
         "> 舊路徑 `/api/pdf-analysis` 仍可用（alias），但公司內網 DLP 會擋，請改用本路徑。\n\n"
         "支援三種 request body：\n"
         "1. **chunked binary**（`Content-Type: application/octet-stream` + 分塊標頭，"
@@ -854,10 +864,16 @@ def _assemble_chunk(upload_id: str, index: int, count: int, chunk: bytes) -> byt
         "3. **multipart**（`multipart/form-data`，舊版相容）：\n"
         "   - `file` (UploadFile)：`.pdf` 檔（或 AES 加密後的二進位）\n"
         "   - `encrypted` (str)：設為 `1` 表示 file 是 AES 加密的 PDF\n\n"
-        "**處理邏輯**：\n"
-        "- 經 OpenAI Files API 上傳後，以 Responses API（structured output）抽取欄位\n"
-        "- 會逐頁解析，一份 PDF 可能回傳多筆地號\n"
-        "- 分析完即刪除 OpenAI 端的暫存檔\n\n"
+        "**Query 參數**：\n"
+        "- `engine` (str, 預設 `auto`)：解析引擎\n"
+        "  - `auto`（預設）：先試 `rule`，若無文字層或抽不到任何一筆才退回 `llm`。"
+        "電子謄本走本機解析（謄本含個資，不外傳、也不花 API 費用），掃描件才送 OpenAI\n"
+        "  - `rule`：純本機解析，用 pypdf 取 PDF 文字層後以規則比對欄位；"
+        "只吃得下有文字層的電子謄本（掃描影像檔直接回 422，不會退回 LLM）\n"
+        "  - `llm`：一律經 OpenAI Files API 上傳後，以 Responses API（structured output）"
+        "抽取欄位；分析完即刪除 OpenAI 端的暫存檔\n"
+        "  - 分塊上傳時只有最後一塊（實際觸發解析的那一塊）會讀這個參數\n\n"
+        "**處理邏輯**：會逐頁解析，一份 PDF 可能回傳多筆地號。\n\n"
         "**回應**：`{ items: [...] }`，每筆 `item` 欄位：\n"
         "- `district` (str)：行政區\n"
         "- `section` (str)：地段名稱\n"
@@ -869,11 +885,18 @@ def _assemble_chunk(upload_id: str, index: int, count: int, chunk: bytes) -> byt
         "- `acquire_month` (int)：取得年月的月份 1-12（與前次移轉現值同行；0 表未取得）\n\n"
         "**錯誤回應**：\n"
         "- `400`：檔案內容為空、AES 解密失敗、gzip 解壓失敗，或（multipart）副檔名非 `.pdf`\n"
+        "- `422`：`engine` 值不合法；或 `engine=rule` 但 PDF 沒有文字層（掃描影像檔），"
+        "請改用 `llm` 或 `auto`\n"
         "- `502`：OpenAI 服務呼叫或解析失敗"
     ),
 )
 async def analyze_pdf_endpoint(
     request: Request,
+    engine: str = Query(
+        "auto",
+        pattern="^(llm|rule|auto)$",
+        description="解析引擎：`llm`（OpenAI）／`rule`（本機 pypdf 規則式）／`auto`（rule 失敗才退回 llm）",
+    ),
 ) -> PdfAnalysisResponse:
     content_type = request.headers.get("content-type", "")
     upload_id = request.headers.get("x-upload-id")
@@ -934,7 +957,27 @@ async def analyze_pdf_endpoint(
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"gzip 解壓失敗: {e}")
 
-    # OpenAI SDK 為同步阻塞，丟到 threadpool 避免卡住事件迴圈
+    # pypdf 與 OpenAI SDK 都是同步阻塞，丟到 threadpool 避免卡住事件迴圈
+    if engine in ("rule", "auto"):
+        try:
+            result = await anyio.to_thread.run_sync(
+                analyze_pdf_rule_based, content, filename
+            )
+        except PdfTextLayerMissing as e:
+            if engine == "rule":
+                raise HTTPException(status_code=422, detail=str(e))
+            print("rule pdf analysis: no text layer, fallback to llm: ", e)
+        except Exception as e:
+            if engine == "rule":
+                print("rule pdf analysis error: ", e)
+                raise HTTPException(status_code=502, detail=f"PDF 分析失敗: {e}")
+            print("rule pdf analysis error, fallback to llm: ", e)
+        else:
+            # auto 模式下抽不到任何一筆，視為規則沒吃下這種版型，退回 LLM
+            if result.items or engine == "rule":
+                return result
+            print("rule pdf analysis: no items, fallback to llm")
+
     try:
         result = await anyio.to_thread.run_sync(analyze_pdf, content, filename)
     except Exception as e:
