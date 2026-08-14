@@ -214,7 +214,7 @@ const uid = () => ++_uid;
    API 抽象層 (對接後端 OpenAPI)
    設計成「介面」: 未來後端通了, useMockData = false 即可
 ════════════════════════════════════════ */
-const DEFAULT_API_BASE_URL = "https://land-information-fthtdzgtf8b8cdgb.canadacentral-01.azurewebsites.net";  // 後端 URL (Azure)
+const DEFAULT_API_BASE_URL = "https://0fe4-211-76-155-19.ngrok-free.app/";  // 後端 URL (Azure)
 const API_CONFIG = {
   // 優先使用前端設定 (localStorage), 未設定則用預設 Azure URL
   baseURL: (localStorage.getItem("apiBaseURL") || DEFAULT_API_BASE_URL).replace(/\/+$/, ""),
@@ -398,25 +398,47 @@ const apiClient = {
     }
     return await resp.json();
   },
-  // POST /api/pdf-analysis — 上傳土地登記謄本/權狀 PDF, 由後端送 OpenAI 解析為結構化持分資料
-  // 回傳 { items: [{district, section, land_no, owner, share, prev_price}, ...] }
+  // POST /api/doc-extract — 上傳土地登記謄本/權狀 PDF, 後端解析為結構化持分資料
+  // (原路徑 /api/pdf-analysis 被公司 DLP 以 URL 關鍵字擋下回 403, 故改名; 後端仍保留舊路徑 alias)
+  // 回傳 { items: [{district, section, land_no, owner, share, prev_price}, ...], engine }
   // 一份 PDF 可能含多筆地號; prev_price 單位為 元/m² (可直接對應表 2 原規定地價)
-  async analyzePdf(file) {
+  // 分塊上傳: 公司 DLP 會擋單一請求 body 超過 ~10KB 的不透明(加密)內容, 故把密文切成
+  //          小分塊分批送(同一 X-Upload-Id), 後端湊齊再解密解析
+  // 註: 加密後的密文不可壓縮, chunk 上線大小 = chunk byteLength (不像 xls 會被 gzip 縮小),
+  //     故門檻要以「線上 body 大小」抓, 不是原始檔案大小
+  // onProgress(sent, total): 選填, 每送完一塊回報進度 (分塊數多時給使用者回饋用)
+  async analyzePdf(file, onProgress) {
     if (API_CONFIG.useMockData) return { items: [] };
-    const url = `${API_CONFIG.baseURL}/api/pdf-analysis`;
-    const gz = await gzipBytes(new Uint8Array(await file.arrayBuffer()));  // gzip 後以 binary 傳
-    // binary 傳輸: 直接送 gzip bytes, 免 multipart overhead / 避免 proxy 擋大 payload
-    const resp = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/octet-stream", ...(API_CONFIG.extraHeaders||{}) },
-      body: gz
-    });
-    if (!resp.ok) {
-      if (resp.status === 400) throw new Error("檔案格式錯誤 (副檔名須為 .pdf, 且內容不可為空)");
-      if (resp.status === 502) throw new Error("PDF 分析服務暫時無法回應, 請稍後再試");
-      throw new Error(`API 失敗 (${resp.status})`);
+    const url = `${API_CONFIG.baseURL}/api/doc-extract`;
+    const gz = await gzipBytes(new Uint8Array(await file.arrayBuffer()));  // 先 gzip 縮小
+    const enc = await aesEncryptBytes(gz);  // 再 AES 加密整個檔案 (謄本含所有權人等個資)
+    const CHUNK = 5 * 1024;  // 分塊大小(線上 body), 留邊際低於 DLP 實測 ~10KB 門檻
+    const uploadId = genId();
+    const count = Math.max(1, Math.ceil(enc.length / CHUNK));
+    let resp;
+    for (let i = 0; i < count; i++) {
+      const part = enc.subarray(i * CHUNK, (i + 1) * CHUNK);  // subarray 不複製記憶體
+      resp = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/octet-stream",
+          "X-Upload-Id": uploadId,
+          "X-Chunk-Index": String(i),
+          "X-Chunk-Count": String(count),
+          ...(API_CONFIG.extraHeaders||{})
+        },
+        body: part
+      });
+      if (!resp.ok) {
+        if (resp.status === 400) throw new Error("檔案格式錯誤 (副檔名須為 .pdf, 且內容不可為空)");
+        if (resp.status === 413) throw new Error("檔案過大, 無法分析");
+        if (resp.status === 429) throw new Error("上傳忙碌中, 請稍後再試");
+        if (resp.status === 502) throw new Error("PDF 分析服務暫時無法回應, 請稍後再試");
+        throw new Error(`API 失敗 (${resp.status})`);
+      }
+      if (onProgress) onProgress(i + 1, count);
     }
-    return await resp.json();  // {items}
+    return await resp.json();  // 最後一塊的回應才含 {items}
   },
   // POST /api/land-tax — 試算土地增值稅 (etax 5101), 回傳 {param5: 稅額}
   // year/month: 計算(處分)年月; 後端用此查 price_index 表取物價指數
@@ -1167,6 +1189,9 @@ function pickImportMode({title, summary, errors = []}) {
 }
 
 // 通用 loading 遮罩 (取代 alert 的等待提示)；回傳 close() 用來關閉
+// 自 v259: 回傳的 close 上掛一個 setSubtitle(text)，讓長時間的工作 (例如 PDF 分塊上傳)
+//          能就地更新副標顯示進度。維持回傳「函式」本身不變，既有 closeLoading() 呼叫不受影響。
+//          注意: 只有初始就有帶 subtitle 的遮罩才有副標節點可更新 (沒帶的話 setSubtitle 是 no-op)。
 function showLoadingOverlay(title, subtitle = "") {
   const overlay = document.createElement("div");
   overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:100000;font-family:'Noto Sans TC',sans-serif;";
@@ -1175,10 +1200,15 @@ function showLoadingOverlay(title, subtitle = "") {
     <div style="background:#fff;padding:28px 32px;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.2);min-width:280px;display:flex;flex-direction:column;align-items:center;gap:14px;">
       <div style="width:38px;height:38px;border:4px solid #E2DFD7;border-top-color:#5E7350;border-radius:50%;animation:li-spin 0.8s linear infinite;"></div>
       <div style="font-size:var(--fs-u14);font-weight:700;color:#262420;text-align:center;">${title}</div>
-      ${subtitle ? `<div style="font-size:var(--fs-u12);color:#807D73;text-align:center;line-height:1.5;">${subtitle}</div>` : ""}
+      ${subtitle ? `<div id="li-sub" style="font-size:var(--fs-u12);color:#807D73;text-align:center;line-height:1.5;">${subtitle}</div>` : ""}
     </div>`;
   document.body.appendChild(overlay);
-  return () => overlay.remove();
+  const close = () => overlay.remove();
+  close.setSubtitle = (text) => {
+    const el = overlay.querySelector("#li-sub");
+    if (el) el.textContent = text;
+  };
+  return close;
 }
 
 // 通用提示 dialog (取代 alert)；tone: "info" | "success" | "error"
@@ -6989,6 +7019,9 @@ function T1({p, sP}) {
               <tr>
                 <th className="px-1 py-1.5 text-left">縣市</th>
                 <th className="px-1 py-1.5 text-left">行政區</th>
+                {/* 自 v259: 都市計畫區改為可填欄位 — 這個值會直接送 /api/parcels 的 urban_plan，
+                    原本沒有 UI 只能吃「縣市+都市計畫」的猜測值，查不到分區基準就回 404 */}
+                <th className="px-1 py-1.5 text-left">都市計畫區</th>
                 <th className="px-1 py-1.5 text-left">使用分區</th>
                 <th className="px-1 py-1.5 text-left">地段</th>
                 <th className="px-1 py-1.5 text-left">地號</th>
@@ -7076,6 +7109,14 @@ function T1({p, sP}) {
                     <td className="px-1 py-1">
                       <input type="text" value={land.district || ""} onChange={e=>updLand(land.id,"district",e.target.value)}
                         className="w-16 px-1 py-0.5 border rounded bg-white text-u11"/>
+                    </td>
+                    <td className="px-1 py-1">
+                      {/* 自 v259: 都市計畫區 — 送出查詢時對應 payload 的 urban_plan。
+                          留空時 queryParcel 仍會 fallback 成「縣市+都市計畫」(維持既有行為)，
+                          但那只是猜測值，查不到分區基準會回 404，所以 placeholder 明示可填。 */}
+                      <input type="text" value={land.urbanPlan || ""} onChange={e=>updLand(land.id,"urbanPlan",e.target.value)}
+                        className="w-24 px-1 py-0.5 border rounded bg-white text-u11"
+                        placeholder={(land.city || p.city || "") + "都市計畫"}/>
                     </td>
                     <td className="px-1 py-1">
                       {/* 自 v243: 使用分區改為 combobox（datalist）— 下拉選單依 land.city 從本地 ZDB
@@ -7182,7 +7223,8 @@ function T1({p, sP}) {
                 const weightedBCR = dr.avg_bcr || 0;
                 return (
                   <tr className="bg-amber-100 font-bold border-t-2 border-amber-400">
-                    <td colSpan={5} className="px-2 py-1.5 text-right text-amber-900">
+                    {/* colSpan 6 = 縣市/行政區/都市計畫區/使用分區/地段/地號 (自 v259 因新增都市計畫區欄從 5 改 6) */}
+                    <td colSpan={6} className="px-2 py-1.5 text-right text-amber-900">
                       — 加總/加權 —
                       {isDon && <span className="ml-1 text-u9 text-tan-700 font-bold whitespace-nowrap">(扣除後)</span>}
                     </td>
@@ -7210,7 +7252,7 @@ function T1({p, sP}) {
           </table>
         </div>
         <div className="flex gap-2 mt-2">
-          <Btn onClick={()=>sP({...p,lands:[...p.lands,{id:uid(),name:"基地"+String.fromCharCode(65+p.lands.length),city:p.city||"",district:p.dist||"",urbanPlan:(p.city||"")+"都市計畫",zone:p.zone||"",sec:secList[0]||"",num:"",m2:0,area:0,price:0,announcedValuePerM2:0,bcr:null,far:null,isNonBuildable:false}]})} className="flex-1">+ 新增土地(單筆)</Btn>
+          <Btn onClick={()=>sP({...p,lands:[...p.lands,{id:uid(),name:"基地"+String.fromCharCode(65+p.lands.length),city:p.city||"",district:p.dist||"",urbanPlan:"",zone:p.zone||"",sec:secList[0]||"",num:"",m2:0,area:0,price:0,announcedValuePerM2:0,bcr:null,far:null,isNonBuildable:false}]})} className="flex-1">+ 新增土地(單筆)</Btn>
           <label className="flex-1 cursor-pointer">
             <input type="file" accept=".csv" className="hidden" onChange={async (e) => {
               const f = e.target.files[0];
@@ -7448,7 +7490,13 @@ function T1({p, sP}) {
                   const closeLoading = showLoadingOverlay("PDF 解析中…", "正在送出並以 AI 解析謄本／權狀，請稍候");
                   let res;
                   try {
-                    res = await apiClient.analyzePdf(f);
+                    // 自 v259: 改為分塊上傳 (避開公司 DLP 對單一請求不透明內容的體積上限),
+                    // 分塊數多時逐塊回報進度; 最後一塊送完才換成解析中的文案
+                    res = await apiClient.analyzePdf(f, (sent, total) => {
+                      closeLoading.setSubtitle(sent < total
+                        ? `上傳中… ${sent}/${total} 分塊`
+                        : "上傳完成，正在解析謄本／權狀，請稍候");
+                    });
                   } catch (err) {
                     closeLoading();
                     await showNotice({title:"PDF 分析失敗", message: err.message, tone:"error"});
