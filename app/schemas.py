@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -155,4 +155,20 @@ class PdfAnalysisResponse(BaseModel):
 
     items: list[PdfAnalysisResult] = Field(
         ..., description="文件中所有筆地號資料，逐頁檢視不要遺漏"
+    )
+
+
+class DocExtractResponse(PdfAnalysisResponse):
+    """`/api/doc-extract` 的 API 回應：解析結果加註實際使用的引擎。
+
+    `engine` 刻意不放進 PdfAnalysisResponse——那個 class 同時是 OpenAI
+    structured output 的 root schema，多一個欄位就會變成要 LLM 自己填。
+    """
+
+    engine: Literal["llm", "rule"] = Field(
+        ...,
+        description=(
+            "實際產出這份結果的引擎：`rule`（本機 pypdf 規則式）或 `llm`（OpenAI）。"
+            "請求 `engine=auto` 時會是實際落到的那一個，不是 `auto`"
+        ),
     )
